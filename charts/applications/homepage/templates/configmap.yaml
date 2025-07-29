@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "homepage.fullname" . }}-config
+  labels:
+    {{- include "homepage.labels" . | nindent 4 }}
+data:
+  settings.yaml: |
+    title: Homepage - Staging Environment
+    favicon: https://github.com/gethomepage/homepage/raw/main/public/android-chrome-192x192.png
+    theme: dark
+    color: slate
+    target: _blank
+    headerStyle: boxed
+    hideVersion: true
+    
+  services.yaml: |
+    - Infrastructure:
+        - ArgoCD:
+            href: https://argocd.lab1830.com
+            description: GitOps Platform
+            icon: argocd.png
+        - Grafana:
+            href: https://grafana.lab1830.com
+            description: Monitoring
+            icon: grafana.png
+    
+    - Media:
+        - Plex:
+            href: https://plex.lab1830.com
+            description: Media Server
+            icon: plex.png
+
+  bookmarks.yaml: |
+    - Development:
+        - GitHub:
+            - href: https://github.com/brianjlehnen/homelab-gitops
+              icon: github.png
+        - Lab1830:
+            - href: https://github.com/brianjlehnen
+              icon: github.png
+
+  widgets.yaml: |
+    - search:
+        provider: google
+        target: _blank
+    - datetime:
+        text_size: xl
+        format:
+          timeStyle: short
+          dateStyle: short
+          hourCycle: h23
+
+  kubernetes.yaml: |
+    mode: cluster

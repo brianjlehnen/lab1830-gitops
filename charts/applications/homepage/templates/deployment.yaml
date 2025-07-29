@@ -26,9 +26,21 @@ spec:
             httpGet:
               path: /
               port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /
               port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "homepage.fullname" . }}-config
