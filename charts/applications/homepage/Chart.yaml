@@ -1,0 +1,16 @@
+apiVersion: v2
+name: homepage
+description: A dashboard for your homelab services
+type: application
+version: 0.1.0
+appVersion: "latest"
+keywords:
+  - dashboard
+  - homepage
+  - homelab
+home: https://github.com/gethomepage/homepage
+sources:
+  - https://github.com/gethomepage/homepage
+maintainers:
+  - name: Lab1830
+    email: admin@lab1830.com

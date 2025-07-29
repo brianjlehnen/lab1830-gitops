@@ -1,0 +1,29 @@
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Kubernetes secrets (if any local ones)
+*secret*.yaml
+*Secret*.yaml
+
+# Helm
+*.tgz
+charts/*.lock
+charts/*/charts/
+charts/*/Chart.lock
+
+# Logs
+*.log
