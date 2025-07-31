@@ -32,6 +32,13 @@ spec:
                   pathType: Prefix
           tls: []  # Disable TLS completely for staging
         
+        # Use local storage for staging (no NFS)
+        persistence:
+          enabled: true
+          storageClass: "local-path"  # Change from nfs-client
+          accessMode: ReadWriteOnce
+          size: 1Gi
+        
         wireguard:
           serverUrl: "wireguard-staging.lab1830.com:51820"
           password: "staging-test-password"
