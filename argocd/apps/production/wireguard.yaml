@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: wireguard-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/name: wireguard
+    app.kubernetes.io/component: vpn-server
+    environment: production
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/brianjlehnen/homelab-gitops.git
+    targetRevision: main
+    path: charts/applications/wireguard
+    helm:
+      valueFiles:
+        - values.yaml
+      # Production uses defaults from values.yaml, minimal overrides
+      values: |
+        # Production environment - mostly using defaults
+        wireguard:
+          password: "secure-production-password-change-me"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: wireguard
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - RespectIgnoreDifferences=true
+  ignoreDifferences:
+    - group: v1
+      kind: Secret
+      name: wireguard-secret
+      jsonPointers:
+        - /data/password

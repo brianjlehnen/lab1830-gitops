@@ -1,0 +1,33 @@
+# Web UI Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "wireguard.fullname" . }}-web
+  labels:
+    {{- include "wireguard.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.webUI.service.type }}
+  ports:
+    - port: {{ .Values.webUI.service.port }}
+      targetPort: web
+      protocol: TCP
+      name: web
+  selector:
+    {{- include "wireguard.selectorLabels" . | nindent 4 }}
+---
+# VPN Service (LoadBalancer)
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "wireguard.fullname" . }}-vpn
+  labels:
+    {{- include "wireguard.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.vpn.service.type }}
+  ports:
+    - port: {{ .Values.vpn.service.port }}
+      targetPort: wireguard
+      protocol: {{ .Values.vpn.service.protocol }}
+      name: wireguard
+  selector:
+    {{- include "wireguard.selectorLabels" . | nindent 4 }}

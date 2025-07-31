@@ -1,0 +1,65 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: wireguard-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/name: wireguard
+    app.kubernetes.io/component: vpn-server
+    environment: staging
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/brianjlehnen/homelab-gitops.git
+    targetRevision: staging
+    path: charts/applications/wireguard
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+        # Staging environment overrides
+        ingress:
+          baseAnnotations:
+            nginx.ingress.kubernetes.io/ssl-redirect: "false"
+          certManager:
+            enabled: false  # Disable cert-manager for staging
+          hosts:
+            - host: wireguard-staging.lab1830.com
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls: []  # Disable TLS completely for staging
+        
+        wireguard:
+          serverUrl: "wireguard-staging.lab1830.com:51820"
+          password: "staging-test-password"
+        
+        resources:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+        
+        # No node affinity for staging
+        affinity: {}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: wireguard-staging
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - RespectIgnoreDifferences=true
+  ignoreDifferences:
+    - group: v1
+      kind: Secret
+      name: wireguard-secret
+      jsonPointers:
+        - /data/password

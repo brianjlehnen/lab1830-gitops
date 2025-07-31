@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "wireguard.fullname" . }}
+  labels:
+    {{- include "wireguard.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "wireguard.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "wireguard.selectorLabels" . | nindent 8 }}
+    spec:
+      securityContext:
+        sysctls:
+          - name: net.ipv4.conf.all.src_valid_mark
+            value: "1"
+          - name: net.ipv4.ip_forward
+            value: "1"
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: web
+              containerPort: 51821
+              protocol: TCP
+            - name: wireguard
+              containerPort: 51820
+              protocol: UDP
+          env:
+            - name: LANG
+              value: "en"
+            - name: WG_HOST
+              value: {{ .Values.wireguard.serverUrl | quote }}
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "wireguard.fullname" . }}-secret
+                  key: password
+            - name: WG_DEFAULT_ADDRESS
+              value: {{ .Values.wireguard.subnet | quote }}
+            - name: WG_ALLOWED_IPS
+              value: {{ .Values.wireguard.allowedIPs | quote }}
+            - name: WG_DEFAULT_DNS
+              value: {{ .Values.wireguard.dns | quote }}
+            - name: WG_PERSISTENT_KEEPALIVE
+              value: "25"
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          volumeMounts:
+            - name: wireguard-config
+              mountPath: /etc/wireguard
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: web
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: web
+            initialDelaySeconds: 15
+            periodSeconds: 10
+      volumes:
+        - name: wireguard-config
+          persistentVolumeClaim:
+            claimName: {{ include "wireguard.fullname" . }}-pvc
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
