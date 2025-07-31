@@ -36,7 +36,7 @@ resources:
 nodeSelector: {}
 tolerations: []
 affinity: {}
-
+env: []
 # Homepage configuration
 config:
   # This will be mounted as configmaps

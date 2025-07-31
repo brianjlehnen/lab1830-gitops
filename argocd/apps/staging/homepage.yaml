@@ -15,6 +15,9 @@ spec:
       valueFiles:
         - values.yaml
       values: |
+        env:
+          - name: HOMEPAGE_ALLOWED_HOSTS
+            value: "homepage-staging.lab1830.com"
         ingress:
           hosts:
             - host: homepage-staging.lab1830.com
