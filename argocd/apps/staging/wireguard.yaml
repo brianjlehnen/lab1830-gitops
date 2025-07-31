@@ -12,7 +12,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/brianjlehnen/homelab-gitops.git
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
     targetRevision: staging
     path: charts/applications/wireguard
     helm:
