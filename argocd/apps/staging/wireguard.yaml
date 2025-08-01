@@ -47,7 +47,13 @@ spec:
             memory: 512Mi
         
         ingress:
-          enabled: false  # No ingress for staging testing
+          enabled: true
+          hosts:
+            - host: wireguard-staging.lab1830.com
+              paths:
+                - path: /
+                  pathType: Prefix
+
   destination:
     server: https://kubernetes.default.svc
     namespace: wireguard-staging
