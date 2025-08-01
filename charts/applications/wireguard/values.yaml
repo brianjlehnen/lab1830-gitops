@@ -71,13 +71,12 @@ persistence:
   size: 1Gi
 
 # Security context
+# Security context for container (staging-compatible)
 securityContext:
   capabilities:
     add:
       - NET_ADMIN
-      - SYS_MODULE
-  privileged: true
-
+  # Removed sysctls and privileged for staging compatibility
 # Production node preference
 affinity:
   nodeAffinity:

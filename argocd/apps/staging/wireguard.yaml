@@ -1,0 +1,67 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: wireguard-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/name: wireguard
+    app.kubernetes.io/component: vpn-server
+    environment: staging
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    targetRevision: staging
+    path: charts/applications/wireguard
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+        # Staging environment overrides
+        persistence:
+          storageClass: "local-path"  # Staging uses local storage
+        
+        # Staging requires privileged mode for sysctls
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+              - NET_ADMIN
+              - NET_RAW
+              - SYS_MODULE
+          runAsUser: 0
+        
+        wireguard:
+          serverUrl: "10.0.1.100:51820"
+          subnet: "10.8.0.1"  # Fixed IP format
+          password: "staging-test-password"
+        
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        
+        ingress:
+          enabled: false  # No ingress for staging testing
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: wireguard-staging
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - RespectIgnoreDifferences=true
+  ignoreDifferences:
+    - group: v1
+      kind: Secret
+      name: wireguard-secret
+      jsonPointers:
+        - /data/password
