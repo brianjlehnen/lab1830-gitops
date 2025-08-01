@@ -55,7 +55,7 @@ wireguard:
   # External endpoint (production)
   serverUrl: "wireguard.lab1830.com:51820"
   # Subnet for VPN clients
-  subnet: "10.8.0.0/24"
+  subnet: "10.8.0.1"
   # Allowed IPs for clients (homelab access)
   allowedIPs: "192.168.4.0/22, 10.8.0.0/24"
   # DNS servers for clients
