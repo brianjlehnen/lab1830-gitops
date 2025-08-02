@@ -34,8 +34,8 @@ spec:
           runAsUser: 0
         
         wireguard:
-          serverUrl: "10.0.1.100:51820"
-          subnet: "10.8.0.1"  # Fixed IP format
+          serverUrl: "192.168.5.101:51820"
+          subnet: "10.8.0.0/24"
           password: "staging-test-password"
         
         resources:
