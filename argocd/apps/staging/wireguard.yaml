@@ -35,7 +35,7 @@ spec:
         
         wireguard:
           serverUrl: "192.168.5.101:51820"
-          subnet: "10.8.0.0/24"
+          subnet: "10.8.0.1"
           password: "staging-test-password"
         
         resources:
