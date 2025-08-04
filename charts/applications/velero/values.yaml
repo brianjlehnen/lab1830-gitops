@@ -1,6 +1,5 @@
 # charts/applications/velero/values.yaml
 velero:
-  # Add the AWS plugin back - it's required for S3-compatible storage
   initContainers:
     - name: velero-plugin-for-aws
       image: velero/velero-plugin-for-aws:v1.9.0
@@ -17,15 +16,13 @@ velero:
         config:
           region: homelab
           s3ForcePathStyle: "true"
-          # We'll add s3Url later when we configure real storage
+          s3Url: http://minio.velero.svc.cluster.local:9000  # Point to MinIO
     
     volumeSnapshotLocation: []
     
   snapshotsEnabled: false
-  
   nodeAgent:
     enabled: true
-    
   deployNodeAgent: true
   
   resources:
@@ -36,9 +33,10 @@ velero:
       cpu: 500m
       memory: 512Mi
 
+  # Real MinIO credentials
   credentials:
     secretContents:
       cloud: |
         [default]
-        aws_access_key_id = dummy
-        aws_secret_access_key = dummy
+        aws_access_key_id = minioadmin
+        aws_secret_access_key = minioadmin
