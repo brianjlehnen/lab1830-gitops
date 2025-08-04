@@ -1,6 +1,4 @@
 # charts/applications/velero/values.yaml
-# Default values for velero
-
 velero:
   # Use official Velero chart values
   initContainers:
@@ -9,18 +7,23 @@ velero:
       
   configuration:
     backupStorageLocation:
-      name: default
-      provider: aws
-      bucket: velero-backups
-      config:
-        region: homelab
-        s3ForcePathStyle: true
-        
+      - name: default
+        provider: aws
+        bucket: velero-backups
+        accessMode: ReadWrite
+        config:
+          region: homelab
+          s3ForcePathStyle: "true"
+          s3Url: http://minio.default.svc.cluster.local:9000
+        credential:
+          name: cloud-credentials
+          key: cloud
+          
   # Enable node agent for File System Backup (NFS support)
   nodeAgent:
     enabled: true
     
-  # Resources
+  # Resources following your patterns
   resources:
     requests:
       cpu: 100m
@@ -28,6 +31,14 @@ velero:
     limits:
       cpu: 500m
       memory: 512Mi
+
+  # Create credentials secret
+  credentials:
+    secretContents:
+      cloud: |
+        [default]
+        aws_access_key_id = minioadmin
+        aws_secret_access_key = minioadmin
 
 # Schedule configurations
 schedules:
