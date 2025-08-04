@@ -1,15 +1,13 @@
-# charts/applications/velero/values.yaml - Simplified working version
+# charts/applications/velero/values.yaml - Remove failing init container
 velero:
-  # Minimal init containers
-  initContainers:
-    - name: velero-plugin-for-aws
-      image: velero/velero-plugin-for-aws:v1.9.0
+  # Remove the problematic init container entirely
+  # initContainers: []  # or just remove the whole section
       
   configuration:
-    # Simple backup storage location without MinIO for now
+    # Simple backup storage location without S3 plugins
     backupStorageLocation:
       - name: default
-        provider: aws
+        provider: aws  # Keep this for now but without init container
         bucket: velero-backups
         config:
           region: homelab
@@ -21,7 +19,7 @@ velero:
   # Disable volume snapshots entirely
   snapshotsEnabled: false
   
-  # Enable node agent for File System Backup
+  # Enable node agent for File System Backup (this is the important part)
   nodeAgent:
     enabled: true
     
@@ -36,7 +34,7 @@ velero:
       cpu: 500m
       memory: 512Mi
 
-  # Simplified credentials (remove MinIO dependency for now)
+  # Simple credentials
   credentials:
     secretContents:
       cloud: |
