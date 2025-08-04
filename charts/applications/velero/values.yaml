@@ -1,36 +1,33 @@
-# charts/applications/velero/values.yaml
+# charts/applications/velero/values.yaml - Simplified working version
 velero:
-  # Use official Velero chart values
+  # Minimal init containers
   initContainers:
     - name: velero-plugin-for-aws
       image: velero/velero-plugin-for-aws:v1.9.0
       
   configuration:
-    # Backup storage location (array format)
+    # Simple backup storage location without MinIO for now
     backupStorageLocation:
       - name: default
         provider: aws
         bucket: velero-backups
-        accessMode: ReadWrite
         config:
           region: homelab
           s3ForcePathStyle: "true"
-          s3Url: http://minio.default.svc.cluster.local:9000
-        credential:
-          name: cloud-credentials
-          key: cloud
     
-    # Disable volume snapshots since we're using File System Backup
+    # Disable volume snapshots
     volumeSnapshotLocation: []
     
-  # Disable volume snapshots entirely for staging
+  # Disable volume snapshots entirely
   snapshotsEnabled: false
   
-  # Enable node agent for File System Backup (NFS support)
+  # Enable node agent for File System Backup
   nodeAgent:
     enabled: true
     
-  # Resources following your patterns
+  deployNodeAgent: true
+  
+  # Resources
   resources:
     requests:
       cpu: 100m
@@ -39,21 +36,10 @@ velero:
       cpu: 500m
       memory: 512Mi
 
-  # Create credentials secret
+  # Simplified credentials (remove MinIO dependency for now)
   credentials:
     secretContents:
       cloud: |
         [default]
-        aws_access_key_id = minioadmin
-        aws_secret_access_key = minioadmin
-
-# Schedule configurations
-schedules:
-  daily-backup:
-    disabled: false
-    schedule: "0 1 * * *"
-    template:
-      includedNamespaces: ["*"]
-      storageLocation: default
-      ttl: "720h0m0s"  # 30 days
-      defaultVolumesToFsBackup: true  # Use File System Backup instead of snapshots
+        aws_access_key_id = dummy
+        aws_secret_access_key = dummy
