@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: velero-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/brianjlehnen/homelab-gitops.git
+    targetRevision: staging
+    path: charts/applications/velero
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+        # Staging-specific overrides
+        velero:
+          configuration:
+            backupStorageLocation:
+              name: staging-storage
+              provider: aws
+              bucket: velero-staging
+              config:
+                region: homelab
+                s3Url: http://minio.default.svc.cluster.local:9000
+                s3ForcePathStyle: true
+        
+        # Reduced resources for staging
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: velero
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

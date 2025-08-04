@@ -1,0 +1,21 @@
+# charts/applications/velero/Chart.yaml
+apiVersion: v2
+name: velero
+description: Velero backup solution for Lab1830 homelab
+type: application
+version: 0.1.0
+appVersion: "1.13.0"
+dependencies:
+  - name: velero
+    version: "~6.6.0" 
+    repository: https://vmware-tanzu.github.io/helm-charts
+keywords:
+  - backup
+  - disaster-recovery
+  - kubernetes
+home: https://velero.io
+sources:
+  - https://github.com/vmware-tanzu/velero
+maintainers:
+  - name: Lab1830
+    email: admin@lab1830.com
