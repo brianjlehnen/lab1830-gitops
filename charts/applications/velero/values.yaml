@@ -1,31 +1,33 @@
-# charts/applications/velero/values.yaml - Remove failing init container
+# charts/applications/velero/values.yaml
 velero:
-  # Remove the problematic init container entirely
-  # initContainers: []  # or just remove the whole section
+  # Add the AWS plugin back - it's required for S3-compatible storage
+  initContainers:
+    - name: velero-plugin-for-aws
+      image: velero/velero-plugin-for-aws:v1.9.0
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - mountPath: /target
+          name: plugins
       
   configuration:
-    # Simple backup storage location without S3 plugins
     backupStorageLocation:
       - name: default
-        provider: aws  # Keep this for now but without init container
+        provider: aws
         bucket: velero-backups
         config:
           region: homelab
           s3ForcePathStyle: "true"
+          # We'll add s3Url later when we configure real storage
     
-    # Disable volume snapshots
     volumeSnapshotLocation: []
     
-  # Disable volume snapshots entirely
   snapshotsEnabled: false
   
-  # Enable node agent for File System Backup (this is the important part)
   nodeAgent:
     enabled: true
     
   deployNodeAgent: true
   
-  # Resources
   resources:
     requests:
       cpu: 100m
@@ -34,7 +36,6 @@ velero:
       cpu: 500m
       memory: 512Mi
 
-  # Simple credentials
   credentials:
     secretContents:
       cloud: |
