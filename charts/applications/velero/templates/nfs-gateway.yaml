@@ -2,21 +2,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "velero.fullname" . }}-nfs-gateway
+  name: nfs-gateway
+  namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "velero.labels" . | nindent 4 }}
-    component: nfs-gateway
+    app: nfs-gateway
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "velero.selectorLabels" . | nindent 6 }}
-      component: nfs-gateway
+      app: nfs-gateway
   template:
     metadata:
       labels:
-        {{- include "velero.selectorLabels" . | nindent 8 }}
-        component: nfs-gateway
+        app: nfs-gateway
     spec:
       containers:
       - name: minio
@@ -51,19 +49,18 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "velero.fullname" . }}-nfs-gateway
+  name: nfs-gateway
+  namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "velero.labels" . | nindent 4 }}
-    component: nfs-gateway
+    app: nfs-gateway
 spec:
   selector:
-    {{- include "velero.selectorLabels" . | nindent 4 }}
-    component: nfs-gateway
+    app: nfs-gateway
   ports:
     - name: api
-      port: 9000
+      port: {{ .Values.nfsGateway.service.ports.api }}
       targetPort: api
     - name: console
-      port: 9001
+      port: {{ .Values.nfsGateway.service.ports.console }}
       targetPort: console
 {{- end }}

@@ -1,57 +1,82 @@
-# Velero application chart values
-image:
-  repository: velero/velero
-  tag: "v1.12.1"
-  pullPolicy: IfNotPresent
-
-# Service configuration
-service:
-  type: ClusterIP
-  port: 8085
-
-# Velero configuration
+# Velero official chart values (updated for v5.x chart)
 velero:
+  # Velero server configuration
+  image:
+    repository: velero/velero
+    tag: v1.12.1
+    pullPolicy: IfNotPresent
+
+  # Resources
+  resources:
+    requests:
+      cpu: 500m
+      memory: 128Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+
+  # Configuration (updated format)
   configuration:
+    # Backup storage location configuration
     backupStorageLocation:
       - name: nfs-backup
-        provider: aws
+        provider: aws  # Provider moved to BSL level
         bucket: velero-backups
         config:
           region: homelab
           s3ForcePathStyle: "true"
           s3Url: "http://nfs-gateway.velero.svc.cluster.local:9000"
-          publicUrl: "http://nfs-gateway.velero.svc.cluster.local:9000"
-    
+        accessMode: ReadWrite
+
+    # Volume snapshot location configuration  
     volumeSnapshotLocation:
       - name: restic
-        provider: restic
+        provider: restic  # Provider at VSL level
 
-  # Enable node agent for Restic
+    # Other configuration options
+    features: ""
+    logLevel: info
+    logFormat: text
+    defaultVolumeSnapshotLocations:
+      restic: restic
+    defaultBackupStorageLocation: nfs-backup
+
+  # Enable node agent (for restic)
   deployNodeAgent: true
-  
+
+  # Credentials for S3 (MinIO gateway)
+  credentials:
+    useSecret: true
+    name: velero-credentials
+    secretContents:
+      cloud: |
+        [default]
+        aws_access_key_id=velero
+        aws_secret_access_key=velero123
+
+  # Initialize with BSL and VSL
+  initContainers:
+    - name: velero-plugin-for-aws
+      image: velero/velero-plugin-for-aws:v1.8.0
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - mountPath: /target
+          name: plugins
+
   # Backup schedules
   schedules:
     daily-cluster:
       disabled: false
-      schedule: "0 1 * * *"  # 1 AM daily
+      schedule: "0 1 * * *"
       useOwnerReferencesInBackup: false
       template:
         includedNamespaces: ["*"]
         excludedNamespaces: ["velero"]
         defaultVolumesToFsBackup: true
         storageLocation: nfs-backup
-        ttl: "168h"  # 7 days retention
+        ttl: "168h"  # 7 days
 
-# Resources
-resources:
-  requests:
-    cpu: 50m
-    memory: 128Mi
-  limits:
-    cpu: 200m
-    memory: 512Mi
-
-# NFS Gateway (MinIO S3-compatible interface)
+# NFS Gateway configuration (separate from Velero)
 nfsGateway:
   enabled: true
   image:
@@ -75,7 +100,8 @@ nfsGateway:
       cpu: 200m
       memory: 256Mi
 
-# Node selector and tolerations
-nodeSelector: {}
-tolerations: []
-affinity: {}
+  service:
+    type: ClusterIP
+    ports:
+      api: 9000
+      console: 9001
