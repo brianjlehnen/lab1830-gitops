@@ -1,0 +1,49 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: descheduler-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/brianjlehnen/homelab-gitops.git
+    targetRevision: staging
+    path: charts/applications/descheduler
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+        # Staging overrides
+        descheduler:
+          schedule: "*/30 * * * *"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 50m
+              memory: 64Mi
+          deschedulerPolicy:
+            strategies:
+              LowNodeUtilization:
+                enabled: true
+                params:
+                  nodeResourceUtilizationThresholds:
+                    thresholds:
+                      cpu: 10
+                      memory: 10
+                    targetThresholds:
+                      cpu: 50
+                      memory: 50
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=false
+      - ServerSideApply=true
