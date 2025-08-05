@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/brianjlehnen/homelab-gitops.git
-    targetRevision: backup-velero-implementation
+    targetRevision: staging
     path: charts/applications/velero
     helm:
       values: |
