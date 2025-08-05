@@ -42,9 +42,9 @@ spec:
           {{- toYaml .Values.nfsGateway.resources | nindent 10 }}
       volumes:
         - name: nfs-storage
-          nfs:
-            server: {{ .Values.nfsGateway.nfs.server | quote }}
-            path: {{ .Values.nfsGateway.nfs.path | quote }}
+          hostPath:
+            path: /mnt/backups/velero
+            type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service
