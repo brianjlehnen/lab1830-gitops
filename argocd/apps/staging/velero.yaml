@@ -9,32 +9,22 @@ spec:
   project: default
   source:
     repoURL: https://github.com/brianjlehnen/homelab-gitops.git
-    targetRevision: staging
+    targetRevision: backup-velero-implementation
     path: charts/applications/velero
     helm:
-      valueFiles:
-        - values.yaml
       values: |
-        # Staging-specific overrides
-        velero:
-          configuration:
-            backupStorageLocation:
-              name: staging-storage
-              provider: aws
-              bucket: velero-staging
-              config:
-                region: homelab
-                s3Url: http://minio.default.svc.cluster.local:9000
-                s3ForcePathStyle: true
+        # Staging-specific values
+        nfsGateway:
+          nfs:
+            server: "192.168.4.159"
+            path: "/volume1/Backups/velero"
         
-        # Reduced resources for staging
-        resources:
-          requests:
-            cpu: 50m
-            memory: 128Mi
-          limits:
-            cpu: 200m
-            memory: 256Mi
+        velero:
+          schedules:
+            daily-cluster:
+              schedule: "0 2 * * *"  # 2 AM for staging
+              template:
+                ttl: "72h"  # 3 days retention for staging
   destination:
     server: https://kubernetes.default.svc
     namespace: velero

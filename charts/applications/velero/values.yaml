@@ -1,42 +1,81 @@
-# charts/applications/velero/values.yaml
+# Velero application chart values
+image:
+  repository: velero/velero
+  tag: "v1.12.1"
+  pullPolicy: IfNotPresent
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 8085
+
+# Velero configuration
 velero:
-  initContainers:
-    - name: velero-plugin-for-aws
-      image: velero/velero-plugin-for-aws:v1.9.0
-      imagePullPolicy: IfNotPresent
-      volumeMounts:
-        - mountPath: /target
-          name: plugins
-      
   configuration:
     backupStorageLocation:
-      - name: default
+      - name: nfs-backup
         provider: aws
         bucket: velero-backups
         config:
           region: homelab
           s3ForcePathStyle: "true"
-          s3Url: http://minio.velero.svc.cluster.local:9000  # Point to MinIO
+          s3Url: "http://nfs-gateway.velero.svc.cluster.local:9000"
+          publicUrl: "http://nfs-gateway.velero.svc.cluster.local:9000"
     
-    volumeSnapshotLocation: []
-    
-  snapshotsEnabled: false
-  nodeAgent:
-    enabled: true
+    volumeSnapshotLocation:
+      - name: restic
+        provider: restic
+
+  # Enable node agent for Restic
   deployNodeAgent: true
+  
+  # Backup schedules
+  schedules:
+    daily-cluster:
+      disabled: false
+      schedule: "0 1 * * *"  # 1 AM daily
+      useOwnerReferencesInBackup: false
+      template:
+        includedNamespaces: ["*"]
+        excludedNamespaces: ["velero"]
+        defaultVolumesToFsBackup: true
+        storageLocation: nfs-backup
+        ttl: "168h"  # 7 days retention
+
+# Resources
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 512Mi
+
+# NFS Gateway (MinIO S3-compatible interface)
+nfsGateway:
+  enabled: true
+  image:
+    repository: minio/minio
+    tag: latest
+    pullPolicy: IfNotPresent
+  
+  credentials:
+    accessKey: "velero"
+    secretKey: "velero123"
+  
+  nfs:
+    server: "192.168.4.159"
+    path: "/volume1/Backups/velero"
   
   resources:
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 50m
+      memory: 64Mi
     limits:
-      cpu: 500m
-      memory: 512Mi
+      cpu: 200m
+      memory: 256Mi
 
-  # Real MinIO credentials
-  credentials:
-    secretContents:
-      cloud: |
-        [default]
-        aws_access_key_id = minioadmin
-        aws_secret_access_key = minioadmin
+# Node selector and tolerations
+nodeSelector: {}
+tolerations: []
+affinity: {}
