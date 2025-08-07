@@ -13,6 +13,9 @@ spec:
     path: charts/applications/velero
     helm:
       values: |
+        # Top-level bucket name override
+        bucketName: velero-backups-staging
+        
         # Staging-specific values
         nfsGateway:
           nfs:
@@ -20,6 +23,16 @@ spec:
             path: "/volume1/Backups/velero"
         
         velero:
+          configuration:
+            backupStorageLocation:
+              - name: nfs-backup
+                provider: aws
+                bucket: velero-backups-staging
+                config:
+                  region: homelab
+                  s3ForcePathStyle: "true"
+                  s3Url: "http://nfs-gateway.velero.svc.cluster.local:9000"
+                accessMode: ReadWrite
           schedules:
             daily-cluster:
               schedule: "0 2 * * *"  # 2 AM for staging
@@ -29,13 +42,12 @@ spec:
         # Bucket auto-creation for staging
         bucketInit:
           enabled: true
-          bucketName: "velero-backups-staging"
+          bucketName: velero-backups-staging
           minioService: "nfs-gateway"
           minioPort: 9000
           credentials:
             accessKeyId: "velero"
             secretAccessKey: "velero123"
-
   destination:
     server: https://kubernetes.default.svc
     namespace: velero
