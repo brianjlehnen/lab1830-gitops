@@ -105,3 +105,24 @@ nfsGateway:
     ports:
       api: 9000
       console: 9001
+# Bucket auto-creation configuration
+bucketInit:
+  enabled: true
+  mcVersion: "RELEASE.2024-07-31T15-58-33Z"
+  minioService: "nfs-gateway"
+  minioPort: 9000
+  bucketName: "velero-backups"
+  credentials:
+    accessKeyId: "velero"
+    secretAccessKey: "velero123"
+
+# Bucket auto-creation configuration
+bucketInit:
+  enabled: false  # Disabled by default, enable in ArgoCD app
+  mcVersion: "RELEASE.2024-07-31T15-58-33Z"
+  minioService: "nfs-gateway"
+  minioPort: 9000
+  bucketName: "velero-backups"
+  credentials:
+    accessKeyId: "velero"
+    secretAccessKey: "velero123"
