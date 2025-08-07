@@ -1,3 +1,7 @@
+# Top-level values (overridden by ArgoCD applications)
+bucketName: "velero-backups"
+bucketPrefix: ""
+
 # Velero official chart values (updated for v5.x chart)
 velero:
   # Velero server configuration
@@ -5,7 +9,7 @@ velero:
     repository: velero/velero
     tag: v1.12.1
     pullPolicy: IfNotPresent
-
+  
   # Resources
   resources:
     requests:
@@ -14,25 +18,25 @@ velero:
     limits:
       cpu: 1000m
       memory: 512Mi
-
+  
   # Configuration (updated format)
   configuration:
     # Backup storage location configuration
     backupStorageLocation:
       - name: nfs-backup
-        provider: aws  # Provider moved to BSL level
-        bucket: velero-backups
+        provider: aws
+        bucket: "{{ .Values.bucketName }}"
         config:
           region: homelab
           s3ForcePathStyle: "true"
           s3Url: "http://nfs-gateway.velero.svc.cluster.local:9000"
         accessMode: ReadWrite
-
-    # Volume snapshot location configuration  
+    
+    # Volume snapshot location configuration
     volumeSnapshotLocation:
       - name: restic
-        provider: restic  # Provider at VSL level
-
+        provider: restic
+    
     # Other configuration options
     features: ""
     logLevel: info
@@ -40,10 +44,10 @@ velero:
     defaultVolumeSnapshotLocations:
       restic: restic
     defaultBackupStorageLocation: nfs-backup
-
+  
   # Enable node agent (for restic)
   deployNodeAgent: true
-
+  
   # Credentials for S3 (MinIO gateway)
   credentials:
     useSecret: true
@@ -53,7 +57,7 @@ velero:
         [default]
         aws_access_key_id=velero
         aws_secret_access_key=velero123
-
+  
   # Initialize with BSL and VSL
   initContainers:
     - name: velero-plugin-for-aws
@@ -62,7 +66,7 @@ velero:
       volumeMounts:
         - mountPath: /target
           name: plugins
-
+  
   # Backup schedules
   schedules:
     daily-cluster:
@@ -74,7 +78,7 @@ velero:
         excludedNamespaces: ["velero"]
         defaultVolumesToFsBackup: true
         storageLocation: nfs-backup
-        ttl: "168h"  # 7 days
+        ttl: "168h" # 7 days
 
 # NFS Gateway configuration (separate from Velero)
 nfsGateway:
@@ -83,15 +87,12 @@ nfsGateway:
     repository: minio/minio
     tag: latest
     pullPolicy: IfNotPresent
-  
   credentials:
     accessKey: "velero"
     secretKey: "velero123"
-  
   nfs:
     server: "192.168.4.159"
     path: "/volume1/Backups/velero"
-  
   resources:
     requests:
       cpu: 50m
@@ -99,30 +100,19 @@ nfsGateway:
     limits:
       cpu: 200m
       memory: 256Mi
-
   service:
     type: ClusterIP
     ports:
       api: 9000
       console: 9001
+
 # Bucket auto-creation configuration
 bucketInit:
   enabled: true
   mcVersion: "RELEASE.2024-07-31T15-58-33Z"
   minioService: "nfs-gateway"
   minioPort: 9000
-  bucketName: "velero-backups"
-  credentials:
-    accessKeyId: "velero"
-    secretAccessKey: "velero123"
-
-# Bucket auto-creation configuration
-bucketInit:
-  enabled: false  # Disabled by default, enable in ArgoCD app
-  mcVersion: "RELEASE.2024-07-31T15-58-33Z"
-  minioService: "nfs-gateway"
-  minioPort: 9000
-  bucketName: "velero-backups"
+  bucketName: "{{ .Values.bucketName }}"
   credentials:
     accessKeyId: "velero"
     secretAccessKey: "velero123"

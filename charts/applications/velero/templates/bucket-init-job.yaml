@@ -33,6 +33,6 @@ spec:
             sleep 5
           done
           echo "MinIO is ready, creating bucket..."
-          mc mb --ignore-existing minio/{{ .Values.bucketInit.bucketName }}
-          echo "Bucket {{ .Values.bucketInit.bucketName }} created successfully"
+          mc mb --ignore-existing minio/{{ .Values.bucketName }}
+          echo "Bucket {{ .Values.bucketName }} created successfully"
 {{- end }}
