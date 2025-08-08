@@ -35,13 +35,16 @@ cert-manager:
         cpu: 100m
         memory: 64Mi
 
-# Default cluster issuers (will be overridden per environment)
+# Default cluster issuers (both available, controlled via ArgoCD)
 clusterIssuers:
   selfsigned:
     enabled: true
     name: selfsigned-clusterissuer
   
   letsencrypt:
-    enabled: false  # Disabled by default, enabled in production only
+    enabled: false  # Controlled via ArgoCD override
     name: letsencrypt-prod
     email: admin@lab1830.com
+    cloudflare:
+      enabled: false  # Controlled via ArgoCD override
+      secretName: cloudflare-api-token-secret
