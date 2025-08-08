@@ -15,13 +15,13 @@ spec:
       values: |
         # Top-level bucket name override
         bucketName: velero-backups-staging
-        
+
         # Staging-specific values
         nfsGateway:
           nfs:
             server: "192.168.4.159"
             path: "/volume1/Backups/velero"
-        
+
         velero:
           configuration:
             backupStorageLocation:
@@ -38,7 +38,7 @@ spec:
               schedule: "0 2 * * *"  # 2 AM for staging
               template:
                 ttl: "72h"  # 3 days retention for staging
-        
+
         # Bucket auto-creation for staging
         bucketInit:
           enabled: true

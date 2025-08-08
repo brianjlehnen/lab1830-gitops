@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: git@github.com:brianjlehnen/homelab-gitops.git
-    targetRevision: hashi-vault-staging
+    targetRevision: staging
     path: charts/applications/vault
     helm:
       values: |
@@ -19,14 +19,14 @@ spec:
           ingressClassName: nginx
           hosts:
             - host: vault-staging.lab1830.com
-              paths: 
+              paths:
                 - path: /
                   pathType: Prefix
           tls:
             - secretName: vault-staging-tls
               hosts:
                 - vault-staging.lab1830.com
-        
+
         # Additional staging overrides
         vault:
           server:

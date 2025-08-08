@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: git@github.com:brianjlehnen/homelab-gitops.git
-    targetRevision: hashi-vault-staging
+    targetRevision: staging
     path: charts/applications/restic
     helm:
       valueFiles:
@@ -18,12 +18,12 @@ spec:
         # Staging-specific values
         vault:
           secretPath: secret/backup/restic/staging
-        
+
         backup:
           pvc:
             namespaces: ["default", "staging"]
             storageClasses: ["local-path"]
-        
+
         resources:
           requests:
             cpu: 50m
