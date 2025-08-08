@@ -1,0 +1,89 @@
+# Production Vault - HA deployment with persistent storage and security
+global:
+  enabled: true
+  tlsDisable: false # Enable TLS for production
+
+# Injector for secret injection into pods
+injector:
+  enabled: true
+  replicas: 1
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
+
+# Server configuration
+server:
+  # Production mode - NO development mode
+  dev:
+    enabled: false
+  
+  # HA configuration for production
+  ha:
+    enabled: true
+    replicas: 2
+    raft:
+      enabled: true
+      setNodeId: false
+      config: |
+        ui = true
+        listener "tcp" {
+          tls_disable = 1
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+        }
+        storage "raft" {
+          path = "/vault/data"
+        }
+        service_registration "kubernetes" {}
+  
+  standalone:
+    enabled: false
+  
+  # Production resources
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  
+  # Persistent storage for production
+  dataStorage:
+    enabled: true
+    size: "10Gi"
+    storageClass: "nfs-client"
+    accessMode: ReadWriteOnce
+  
+  # Service configuration
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 8200
+    targetPort: 8200
+  
+  # Production ingress configuration
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    hosts:
+      - host: vault.lab1830.com
+        paths:
+          - "/"
+    tls:
+      - secretName: vault-production-tls
+        hosts:
+          - vault.lab1830.com
+
+# UI configuration
+ui:
+  enabled: true
+  serviceType: "ClusterIP"
+  externalPort: 8200
