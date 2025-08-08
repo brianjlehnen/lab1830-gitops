@@ -1,9 +1,8 @@
-# Production Vault - HA deployment with persistent storage and security
+# Production Vault - Stage 1: HTTP (for initialization)
 global:
   enabled: true
-  tlsDisable: false # Enable TLS for production
+  tlsDisable: true  # Stage 1: Disable TLS
 
-# Injector for secret injection into pods
 injector:
   enabled: true
   replicas: 1
@@ -15,13 +14,10 @@ injector:
       memory: "128Mi"
       cpu: "100m"
 
-# Server configuration
 server:
-  # Production mode - NO development mode
   dev:
     enabled: false
   
-  # HA configuration for production
   ha:
     enabled: true
     replicas: 2
@@ -30,20 +26,22 @@ server:
       setNodeId: false
       config: |
         ui = true
+        
         listener "tcp" {
-          tls_disable = 1
+          tls_disable = 1                    # Stage 1: HTTP only
           address = "[::]:8200"
           cluster_address = "[::]:8201"
         }
+        
         storage "raft" {
           path = "/vault/data"
         }
+        
         service_registration "kubernetes" {}
-  
+
   standalone:
     enabled: false
-  
-  # Production resources
+
   resources:
     requests:
       memory: "256Mi"
@@ -51,38 +49,35 @@ server:
     limits:
       memory: "512Mi"
       cpu: "500m"
-  
-  # Persistent storage for production
+
   dataStorage:
     enabled: true
     size: "10Gi"
     storageClass: "nfs-client"
     accessMode: ReadWriteOnce
-  
-  # Service configuration
-  service:
-    enabled: true
-    type: ClusterIP
-    port: 8200
-    targetPort: 8200
-  
-  # Production ingress configuration
-  ingress:
-    enabled: true
-    ingressClassName: nginx
-    annotations:
-      nginx.ingress.kubernetes.io/ssl-redirect: "true"
-      cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    hosts:
-      - host: vault.lab1830.com
-        paths:
-          - "/"
-    tls:
-      - secretName: vault-production-tls
-        hosts:
-          - vault.lab1830.com
 
-# UI configuration
+service:
+  enabled: true
+  type: ClusterIP
+  port: 8200
+  targetPort: 8200
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"  # Stage 1: Backend is HTTP
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: vault.lab1830.com
+      paths:
+        - "/"
+  tls:
+    - secretName: vault-production-tls
+      hosts:
+        - vault.lab1830.com
+
 ui:
   enabled: true
   serviceType: "ClusterIP"
