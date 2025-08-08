@@ -8,20 +8,29 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    repoURL: https://github.com/brianjlehnen/homelab-gitops.git
     targetRevision: main
     path: charts/applications/homepage
     helm:
-      valueFiles:
-        - values.yaml
       values: |
         replicaCount: 2
+        
         ingress:
+          enabled: true
+          className: nginx
+          annotations:
+            nginx.ingress.kubernetes.io/ssl-redirect: "true"
+            cert-manager.io/cluster-issuer: "letsencrypt-prod-gitops"  # Use new ClusterIssuer
           hosts:
             - host: homepage.lab1830.com
               paths:
                 - path: /
                   pathType: Prefix
+          tls:
+            - secretName: homepage-tls-gitops  # Different secret name for safety
+              hosts:
+                - homepage.lab1830.com
+        
         resources:
           requests:
             cpu: 50m
@@ -31,7 +40,7 @@ spec:
             memory: 256Mi
   destination:
     server: https://kubernetes.default.svc
-    namespace: homepage
+    namespace: homepage-production
   syncPolicy:
     automated:
       prune: false

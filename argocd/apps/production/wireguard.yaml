@@ -23,6 +23,15 @@ spec:
         # Production environment - mostly using defaults
         wireguard:
           password: "secure-production-password-change-me"
+        
+        # Add cert-manager TLS automation
+        ingress:
+          annotations:
+            cert-manager.io/cluster-issuer: "letsencrypt-prod-gitops"
+          tls:
+            - secretName: wireguard-tls-gitops
+              hosts:
+                - wireguard.lab1830.com
   destination:
     server: https://kubernetes.default.svc
     namespace: wireguard

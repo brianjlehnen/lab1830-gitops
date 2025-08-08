@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/brianjlehnen/homelab-gitops.git
+    targetRevision: main
+    path: charts/applications/cert-manager
+    helm:
+      values: |
+        cert-manager:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+        
+        # Production: Enable Let's Encrypt with different name
+        clusterIssuers:
+          selfsigned:
+            enabled: true
+            name: selfsigned-clusterissuer-gitops
+          letsencrypt:
+            enabled: true
+            name: letsencrypt-prod-gitops  # Different name to avoid conflict
+            email: admin@lab1830.com
+            cloudflare:
+              enabled: true
+              secretName: cloudflare-api-token-secret
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cert-manager
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
