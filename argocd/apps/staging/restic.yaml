@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: restic-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    targetRevision: hashi-vault-staging
+    path: charts/applications/restic
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+        # Staging-specific values
+        vault:
+          secretPath: secret/backup/restic/staging
+        
+        backup:
+          pvc:
+            namespaces: ["default", "staging"]
+            storageClasses: ["local-path"]
+        
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: backup
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

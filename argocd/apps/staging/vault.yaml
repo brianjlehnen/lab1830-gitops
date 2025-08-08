@@ -1,0 +1,52 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    targetRevision: hashi-vault-staging
+    path: charts/applications/vault
+    helm:
+      values: |
+        # Staging-specific ingress configuration
+        ingress:
+          enabled: true
+          ingressClassName: nginx
+          hosts:
+            - host: vault-staging.lab1830.com
+              paths: 
+                - path: /
+                  pathType: Prefix
+          tls:
+            - secretName: vault-staging-tls
+              hosts:
+                - vault-staging.lab1830.com
+        
+        # Additional staging overrides
+        vault:
+          server:
+            ingress:
+              enabled: true
+              ingressClassName: nginx
+              hosts:
+                - host: vault-staging.lab1830.com
+                  paths: ["/"]
+              tls:
+                - secretName: vault-staging-tls
+                  hosts:
+                    - vault-staging.lab1830.com
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vault
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
