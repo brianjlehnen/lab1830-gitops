@@ -1,0 +1,38 @@
+{{- if .Values.bucketInit.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "velero.fullname" . }}-bucket-init
+  namespace: {{ .Values.namespace | default "velero" }}
+  labels:
+    {{- include "velero.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        app: bucket-init
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: create-bucket
+        image: minio/mc:{{ .Values.bucketInit.mcVersion | default "latest" }}
+        env:
+        - name: MC_HOST_minio
+          value: "http://{{ .Values.bucketInit.credentials.accessKeyId }}:{{ .Values.bucketInit.credentials.secretAccessKey }}@{{ .Values.bucketInit.minioService }}:{{ .Values.bucketInit.minioPort }}"
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Waiting for MinIO to be ready..."
+          until mc admin info minio > /dev/null 2>&1; do
+            echo "MinIO not ready, waiting..."
+            sleep 5
+          done
+          echo "MinIO is ready, creating bucket..."
+          mc mb --ignore-existing minio/{{ .Values.bucketName }}
+          echo "Bucket {{ .Values.bucketName }} created successfully"
+{{- end }}

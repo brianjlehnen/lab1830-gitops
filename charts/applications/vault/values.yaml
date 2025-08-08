@@ -1,0 +1,65 @@
+# Staging Vault - simplified single-node deployment for development and testing
+vault:
+  # Global settings
+  global:
+    enabled: true
+    tlsDisable: true  # Simplified TLS for staging
+
+  # Injector for secret injection into pods
+  injector:
+    enabled: true
+    replicas: 1
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "25m"
+      limits:
+        memory: "128Mi"
+        cpu: "50m"
+
+  # Server configuration  
+  server:
+    # Single replica for staging simplicity
+    ha:
+      enabled: false
+    standalone:
+      enabled: true
+    
+    # Development mode for easy staging setup
+    dev:
+      enabled: true
+      devRootToken: "staging-root-token-12345"
+      devListenAddress: "0.0.0.0:8200"
+    
+    # Resources appropriate for staging
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "200m"
+    
+    # Storage for staging (local-path compatible)
+    dataStorage:
+      enabled: true
+      storageClass: "local-path"
+      size: "1Gi"
+    
+    # Service configuration
+    service:
+      enabled: true
+      type: ClusterIP
+      port: 8200
+      targetPort: 8200
+    
+    # UI enabled for development/testing
+    ui:
+      enabled: true
+      serviceType: "ClusterIP"
+      serviceNodePort: null
+      externalPort: 8200
+
+# Ingress will be configured in ArgoCD application
+ingress:
+  enabled: false  # Configured per environment

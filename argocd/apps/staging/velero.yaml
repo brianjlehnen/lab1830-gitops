@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: velero-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    targetRevision: staging
+    path: charts/applications/velero
+    helm:
+      values: |
+        # Top-level bucket name override
+        bucketName: velero-backups-staging
+
+        # Staging-specific values
+        nfsGateway:
+          nfs:
+            server: "192.168.4.159"
+            path: "/volume1/Backups/velero"
+
+        velero:
+          configuration:
+            backupStorageLocation:
+              - name: nfs-backup
+                provider: aws
+                bucket: velero-backups-staging
+                config:
+                  region: homelab
+                  s3ForcePathStyle: "true"
+                  s3Url: "http://nfs-gateway.velero.svc.cluster.local:9000"
+                accessMode: ReadWrite
+          schedules:
+            daily-cluster:
+              schedule: "0 2 * * *"  # 2 AM for staging
+              template:
+                ttl: "72h"  # 3 days retention for staging
+
+        # Bucket auto-creation for staging
+        bucketInit:
+          enabled: true
+          bucketName: velero-backups-staging
+          minioService: "nfs-gateway"
+          minioPort: 9000
+          credentials:
+            accessKeyId: "velero"
+            secretAccessKey: "velero123"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: velero
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

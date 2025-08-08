@@ -1,0 +1,66 @@
+{{- if .Values.nfsGateway.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nfs-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: nfs-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nfs-gateway
+  template:
+    metadata:
+      labels:
+        app: nfs-gateway
+    spec:
+      containers:
+      - name: minio
+        image: "{{ .Values.nfsGateway.image.repository }}:{{ .Values.nfsGateway.image.tag }}"
+        imagePullPolicy: {{ .Values.nfsGateway.image.pullPolicy }}
+        args:
+          - server
+          - /data
+          - --console-address
+          - ":9001"
+        env:
+          - name: MINIO_ROOT_USER
+            value: {{ .Values.nfsGateway.credentials.accessKey | quote }}
+          - name: MINIO_ROOT_PASSWORD
+            value: {{ .Values.nfsGateway.credentials.secretKey | quote }}
+        ports:
+          - name: api
+            containerPort: 9000
+          - name: console
+            containerPort: 9001
+        volumeMounts:
+          - name: nfs-storage
+            mountPath: /data
+        resources:
+          {{- toYaml .Values.nfsGateway.resources | nindent 10 }}
+      volumes:
+        - name: nfs-storage
+          hostPath:
+            path: /mnt/backups/velero
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nfs-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: nfs-gateway
+spec:
+  selector:
+    app: nfs-gateway
+  ports:
+    - name: api
+      port: {{ .Values.nfsGateway.service.ports.api }}
+      targetPort: api
+    - name: console
+      port: {{ .Values.nfsGateway.service.ports.console }}
+      targetPort: console
+{{- end }}

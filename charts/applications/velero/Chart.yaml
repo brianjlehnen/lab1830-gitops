@@ -1,0 +1,23 @@
+apiVersion: v2
+name: velero
+description: Velero backup and restore for Kubernetes
+type: application
+version: 0.1.0
+appVersion: "v1.12.1"
+
+dependencies:
+  - name: velero
+    version: "5.1.4"
+    repository: "https://vmware-tanzu.github.io/helm-charts"
+
+keywords:
+  - backup
+  - restore
+  - disaster-recovery
+  - velero
+home: https://velero.io
+sources:
+  - https://github.com/vmware-tanzu/velero
+maintainers:
+  - name: Lab1830
+    email: admin@lab1830.com

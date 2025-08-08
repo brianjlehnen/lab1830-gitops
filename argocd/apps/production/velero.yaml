@@ -1,0 +1,76 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: velero-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    targetRevision: main
+    path: charts/applications/velero
+    helm:
+      values: |
+        # Production-specific values
+        nfsGateway:
+          nfs:
+            server: "192.168.4.159"
+            path: "/volume1/Backups/velero"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+        
+        velero:
+          schedules:
+            daily-cluster:
+              schedule: "0 2 * * *"  # 2 AM daily
+              template:
+                ttl: "168h"  # 7 days retention for production
+            weekly-full:
+              schedule: "0 1 * * 0"  # Weekly on Sunday at 1 AM
+              template:
+                ttl: "720h"  # 30 days retention
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+        
+        # Bucket auto-creation for production
+        bucketInit:
+          enabled: true
+          bucketName: "velero-backups"
+          minioService: "nfs-gateway"
+          minioPort: 9000
+          credentials:
+            accessKeyId: "velero"
+            secretAccessKey: "velero123"
+        
+        # Production-specific settings
+        nodeAgent:
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: velero
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
