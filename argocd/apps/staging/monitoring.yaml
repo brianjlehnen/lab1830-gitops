@@ -1,0 +1,103 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    targetRevision: staging
+    path: charts/applications/monitoring
+    helm:
+      values: |
+        kube-prometheus-stack:
+          grafana:
+            ingress:
+              enabled: true
+              ingressClassName: "nginx"
+              hosts:
+                - grafana-staging.lab1830.com
+              annotations:
+                nginx.ingress.kubernetes.io/ssl-redirect: "true"
+                nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+              tls:
+                - secretName: grafana-staging-tls
+                  hosts:
+                    - grafana-staging.lab1830.com
+            persistence:
+              enabled: false
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 200m
+                memory: 256Mi
+
+          prometheus:
+            prometheusSpec:
+              retention: 7d
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 400Mi
+                limits:
+                  cpu: 500m
+                  memory: 800Mi
+              storageSpec:
+                volumeClaimTemplate:
+                  spec:
+                    storageClassName: "local-path"
+                    accessModes: ["ReadWriteOnce"]
+                    resources:
+                      requests:
+                        storage: 10Gi
+
+          alertmanager:
+            alertmanagerSpec:
+              resources:
+                requests:
+                  cpu: 25m
+                  memory: 64Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+              storage:
+                volumeClaimTemplate:
+                  spec:
+                    storageClassName: "local-path"
+                    accessModes: ["ReadWriteOnce"]
+                    resources:
+                      requests:
+                        storage: 2Gi
+
+          kubeStateMetrics:
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 100m
+                memory: 256Mi
+
+          nodeExporter:
+            resources:
+              requests:
+                cpu: 20m
+                memory: 64Mi
+              limits:
+                cpu: 100m
+                memory: 128Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring-staging
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
