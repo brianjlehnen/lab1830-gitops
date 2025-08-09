@@ -1,70 +1,71 @@
 # Staging Vault - Development mode with simplified configuration
-global:
-  enabled: true
-  tlsDisable: true # Simplified TLS for staging
-
-# Injector for secret injection into pods
-injector:
-  enabled: true
-  replicas: 1
-  resources:
-    requests:
-      memory: "64Mi"
-      cpu: "25m"
-    limits:
-      memory: "128Mi"
-      cpu: "50m"
-
-# Server configuration
-server:
-  # Development mode for easy staging setup
-  dev:
+vault:
+  global:
     enabled: true
-    devRootToken: "staging-root-token-12345"
-    devListenAddress: "0.0.0.0:8200"
+    tlsDisable: true # Simplified TLS for staging
   
-  # IMPORTANT: Disable these when dev mode is enabled
-  ha:
-    enabled: false
-  
-  standalone:
-    enabled: false  # Must be false for dev mode
-  
-  # Resources appropriate for staging
-  resources:
-    requests:
-      memory: "256Mi"
-      cpu: "100m"
-    limits:
-      memory: "512Mi"
-      cpu: "200m"
-  
-  # IMPORTANT: Disable storage in dev mode (runs in-memory)
-  dataStorage:
-    enabled: false  # Must be false for dev mode
-  
-  # Service configuration
-  service:
+  # Injector for secret injection into pods
+  injector:
     enabled: true
-    type: ClusterIP
-    port: 8200
-    targetPort: 8200
+    replicas: 1
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "25m"
+      limits:
+        memory: "128Mi"
+        cpu: "50m"
   
-  # Staging ingress configuration
-  ingress:
+  # Server configuration
+  server:
+    # Development mode for easy staging setup
+    dev:
+      enabled: true
+      devRootToken: "staging-root-token-12345"
+      devListenAddress: "0.0.0.0:8200"
+    
+    # IMPORTANT: Disable these when dev mode is enabled
+    ha:
+      enabled: false
+    
+    standalone:
+      enabled: false  # Must be false for dev mode
+    
+    # Resources appropriate for staging
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "200m"
+    
+    # IMPORTANT: Disable storage in dev mode (runs in-memory)
+    dataStorage:
+      enabled: false  # Must be false for dev mode
+    
+    # Service configuration
+    service:
+      enabled: true
+      type: ClusterIP
+      port: 8200
+      targetPort: 8200
+    
+    # Staging ingress configuration
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      annotations:
+        nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      hosts:
+        - host: vault-staging.lab1830.com
+          paths:
+            - "/"
+      # Remove TLS for staging simplicity
+      tls: []
+  
+  # UI configuration
+  ui:
     enabled: true
-    ingressClassName: nginx
-    annotations:
-      nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    hosts:
-      - host: vault-staging.lab1830.com
-        paths:
-          - "/"
-    # Remove TLS for staging simplicity
-    tls: []
-
-# UI configuration
-ui:
-  enabled: true
-  serviceType: "ClusterIP"
-  externalPort: 8200
+    serviceType: "ClusterIP"
+    externalPort: 8200
