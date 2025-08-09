@@ -23,11 +23,12 @@ server:
     devRootToken: "staging-root-token-12345"
     devListenAddress: "0.0.0.0:8200"
   
-  # Single replica for staging simplicity
+  # IMPORTANT: Disable these when dev mode is enabled
   ha:
     enabled: false
+  
   standalone:
-    enabled: true
+    enabled: false  # Must be false for dev mode
   
   # Resources appropriate for staging
   resources:
@@ -38,11 +39,9 @@ server:
       memory: "512Mi"
       cpu: "200m"
   
-  # Storage for staging (local-path compatible)
+  # IMPORTANT: Disable storage in dev mode (runs in-memory)
   dataStorage:
-    enabled: true
-    storageClass: "local-path"
-    size: "1Gi"
+    enabled: false  # Must be false for dev mode
   
   # Service configuration
   service:
@@ -61,10 +60,8 @@ server:
       - host: vault-staging.lab1830.com
         paths:
           - "/"
-    tls:
-      enabled: true
-      hosts:
-        - vault-staging.lab1830.com
+    # Remove TLS for staging simplicity
+    tls: []
 
 # UI configuration
 ui:
