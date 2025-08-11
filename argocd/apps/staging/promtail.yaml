@@ -15,46 +15,20 @@ spec:
       valueFiles:
         - values.yaml
       values: |
-        # Staging configuration - point to correct service
-        config:
-          clients:
-            - url: http://loki-staging.monitoring.svc.cluster.local:3100/loki/api/v1/push
-              external_labels:
-                cluster: staging
-                environment: staging
-        
-        resources:
-          requests:
-            cpu: 50m
-            memory: 64Mi
-          limits:
-            cpu: 200m
-            memory: 128Mi
-        
-        # Adjust probes for staging
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: http-metrics
-          initialDelaySeconds: 30
-          periodSeconds: 15
-          timeoutSeconds: 10
-          failureThreshold: 6
-        
-        livenessProbe:
-          httpGet:
-            path: /ready
-            port: http-metrics
-          initialDelaySeconds: 45
-          periodSeconds: 30
-          timeoutSeconds: 10
-          failureThreshold: 6
-        
-        # Tolerations for single node
-        tolerations: []
-        
-        # Node selector (optional)
-        nodeSelector: {}
+        promtail:
+          config:
+            clients:
+              - url: http://loki-staging.monitoring.svc.cluster.local:3100/loki/api/v1/push
+                external_labels:
+                  cluster: staging
+                  environment: staging
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
