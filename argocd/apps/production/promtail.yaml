@@ -15,27 +15,185 @@ spec:
       valueFiles:
         - values.yaml
       values: |
-        promtail:
-          config:
-            clients:
-              - url: http://loki-production.monitoring.svc.cluster.local:3100/loki/api/v1/push
+        # Production Promtail configuration
+        config:
+          clients:
+            - url: http://loki-gateway.logging.svc.cluster.local/loki/api/v1/push
+              external_labels:
+                cluster: homelab
+                environment: production
           
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 200m
-              memory: 256Mi
-          
-          tolerations:
-            - effect: NoSchedule
-              operator: Exists
-            - effect: NoExecute
-              operator: Exists
+          # Enhanced log scraping configuration
+          scrape_configs:
+            - job_name: kubernetes-pods
+              kubernetes_sd_configs:
+                - role: pod
+              pipeline_stages:
+                - cri: {}
+                - labeldrop:
+                    - __meta_kubernetes_pod_container_init
+                    - __meta_kubernetes_pod_container_image_id
+                - labelmap:
+                    __meta_kubernetes_pod_label_(.+): __tmp_pod_label_$1
+                - labelmap:
+                    __tmp_pod_label_(.+): $1
+                - match:
+                    selector: '{__tmp_pod_label_app="loki"}'
+                    action: drop
+              relabel_configs:
+                - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+                  action: keep
+                  regex: true
+                - source_labels: [__meta_kubernetes_pod_node_name]
+                  target_label: __host__
+                - action: labelmap
+                  regex: __meta_kubernetes_pod_label_(.+)
+                - action: replace
+                  replacement: $1
+                  separator: /
+                  source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_pod_name]
+                  target_label: job
+                - action: replace
+                  source_labels: [__meta_kubernetes_namespace]
+                  target_label: namespace
+                - action: replace
+                  source_labels: [__meta_kubernetes_pod_name]
+                  target_label: pod
+                - action: replace
+                  source_labels: [__meta_kubernetes_pod_container_name]
+                  target_label: container
+                - replacement: /var/log/pods/*$1/*.log
+                  separator: /
+                  source_labels: [__meta_kubernetes_pod_uid, __meta_kubernetes_pod_container_name]
+                  target_label: __path__
+            
+            - job_name: kubernetes-pods-app
+              kubernetes_sd_configs:
+                - role: pod
+              pipeline_stages:
+                - cri: {}
+              relabel_configs:
+                - action: drop
+                  regex: .+
+                  source_labels: [__meta_kubernetes_pod_label_name]
+                - source_labels: [__meta_kubernetes_pod_label_app]
+                  target_label: __service__
+                - source_labels: [__meta_kubernetes_pod_node_name]
+                  target_label: __host__
+                - action: drop
+                  regex: ^$
+                  source_labels: [__service__]
+                - action: labelmap
+                  regex: __meta_kubernetes_pod_label_(.+)
+                - action: replace
+                  replacement: $1
+                  separator: /
+                  source_labels: [__meta_kubernetes_namespace, __service__]
+                  target_label: job
+                - action: replace
+                  source_labels: [__meta_kubernetes_namespace]
+                  target_label: namespace
+                - action: replace
+                  source_labels: [__meta_kubernetes_pod_name]
+                  target_label: pod
+                - action: replace
+                  source_labels: [__meta_kubernetes_pod_container_name]
+                  target_label: container
+                - replacement: /var/log/pods/*$1/*.log
+                  separator: /
+                  source_labels: [__meta_kubernetes_pod_uid, __meta_kubernetes_pod_container_name]
+                  target_label: __path__
+        
+        # Production resource allocation
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+        
+        # Production-grade probes
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http-metrics
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: http-metrics
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 6
+        
+        # ServiceMonitor for Prometheus monitoring
+        serviceMonitor:
+          enabled: true
+          namespace: logging
+          labels:
+            app: promtail
+          interval: 30s
+        
+        # Node affinity to ensure coverage across all nodes
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                      - linux
+        
+        # Tolerations for control plane scheduling
+        tolerations:
+          - key: node-role.kubernetes.io/control-plane
+            operator: Exists
+            effect: NoSchedule
+          - key: node-role.kubernetes.io/master
+            operator: Exists
+            effect: NoSchedule
+        
+        # Enhanced volume mounts for log collection
+        extraVolumes:
+          - name: docker
+            hostPath:
+              path: /var/lib/docker/containers
+          - name: pods
+            hostPath:
+              path: /var/log/pods
+          - name: journal
+            hostPath:
+              path: /var/log/journal
+        
+        extraVolumeMounts:
+          - name: docker
+            mountPath: /var/lib/docker/containers
+            readOnly: true
+          - name: pods
+            mountPath: /var/log/pods
+            readOnly: true
+          - name: journal
+            mountPath: /var/log/journal
+            readOnly: true
+        
+        # Security context
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+          fsGroup: 0
+        
+        # Priority class for critical system component
+        priorityClassName: system-node-critical
   destination:
     server: https://kubernetes.default.svc
-    namespace: monitoring
+    namespace: logging
   syncPolicy:
     automated:
       prune: false
