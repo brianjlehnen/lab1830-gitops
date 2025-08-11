@@ -4,6 +4,7 @@ metadata:
   name: {{ .Values.storageClasses.nfsLogs.name }}
   annotations:
     storageclass.kubernetes.io/is-default-class: "false"
+    argocd.argoproj.io/sync-options: Replace=true
 provisioner: nfs.csi.k8s.io
 parameters:
   server: {{ .Values.nfs.server }}
