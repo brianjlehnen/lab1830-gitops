@@ -15,10 +15,10 @@ spec:
       valueFiles:
         - values.yaml
       values: |
-        # Staging configuration
+        # Staging configuration - point to correct service
         config:
           clients:
-            - url: http://loki-singleBinary.monitoring.svc.cluster.local:3100/loki/api/v1/push
+            - url: http://loki-staging.monitoring.svc.cluster.local:3100/loki/api/v1/push
               external_labels:
                 cluster: staging
                 environment: staging
