@@ -1,0 +1,13 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Values.storageClasses.nfsLogs.name }}
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "false"
+provisioner: nfs.csi.k8s.io
+parameters:
+  server: {{ .Values.nfs.server }}
+  share: {{ .Values.storageClasses.nfsLogs.share }}
+reclaimPolicy: {{ .Values.storageClasses.nfsLogs.reclaimPolicy }}
+volumeBindingMode: Immediate
+allowVolumeExpansion: true

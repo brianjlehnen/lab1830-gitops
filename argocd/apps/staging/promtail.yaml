@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: promtail-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    targetRevision: staging
+    path: charts/applications/promtail
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+        promtail:
+          config:
+            clients:
+              - url: http://loki-staging.monitoring.svc.cluster.local:3100/loki/api/v1/push
+          
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
