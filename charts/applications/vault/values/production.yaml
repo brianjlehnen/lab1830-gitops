@@ -68,13 +68,13 @@ ingress:
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"  # Stage 1: Backend is HTTP
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod-gitops"  # Use the production ClusterIssuer for TLS
   hosts:
     - host: vault.lab1830.com
       paths:
         - "/"
   tls:
-    - secretName: vault-production-tls
+    - secretName: vault-tls-gitops
       hosts:
         - vault.lab1830.com
 

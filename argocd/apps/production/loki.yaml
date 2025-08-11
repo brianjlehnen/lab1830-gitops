@@ -1,0 +1,179 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    targetRevision: main
+    path: charts/applications/loki
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+        # Production deployment with microservices architecture
+        deploymentMode: Distributed
+        
+        loki:
+          commonConfig:
+            replication_factor: 2
+          limits_config:
+            retention_period: 7d
+            ingestion_rate_mb: 16
+            ingestion_burst_size_mb: 32
+          storage:
+            type: filesystem
+            filesystem:
+              chunks_directory: /var/loki/chunks
+              rules_directory: /var/loki/rules
+        
+        # Write path components
+        write:
+          replicas: 2
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          persistence:
+            enabled: true
+            size: 20Gi
+            storageClass: "nfs-client"
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    labelSelector:
+                      matchLabels:
+                        app.kubernetes.io/component: write
+                    topologyKey: kubernetes.io/hostname
+        
+        # Read path components
+        read:
+          replicas: 2
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          persistence:
+            enabled: true
+            size: 10Gi
+            storageClass: "nfs-client"
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    labelSelector:
+                      matchLabels:
+                        app.kubernetes.io/component: read
+                    topologyKey: kubernetes.io/hostname
+        
+        # Backend components
+        backend:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          persistence:
+            enabled: true
+            size: 10Gi
+            storageClass: "nfs-client"
+        
+        # Gateway for load balancing
+        gateway:
+          enabled: true
+          replicas: 2
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    labelSelector:
+                      matchLabels:
+                        app.kubernetes.io/component: gateway
+                    topologyKey: kubernetes.io/hostname
+          service:
+            type: ClusterIP
+        
+        # Production caching for performance
+        chunksCache:
+          enabled: true
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+        
+        resultsCache:
+          enabled: true
+          replicas: 1
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+        
+        # Production monitoring
+        monitoring:
+          lokiCanary:
+            enabled: true
+            resources:
+              requests:
+                cpu: 25m
+                memory: 32Mi
+              limits:
+                cpu: 100m
+                memory: 64Mi
+        
+        # ServiceMonitor for Prometheus scraping
+        serviceMonitor:
+          enabled: true
+          namespace: monitoring
+          labels:
+            app: loki
+          interval: 30s
+        
+        # Node preferences for high-memory workloads
+        nodeSelector:
+          # Prefer nodes with more memory for Loki components
+        
+        # Test configuration
+        test:
+          enabled: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: logging
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

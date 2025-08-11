@@ -1,0 +1,21 @@
+apiVersion: v2
+name: cert-manager
+description: Certificate management for Lab1830 homelab
+type: application
+version: 0.1.0
+appVersion: "v1.16.2"
+keywords:
+  - certificates
+  - tls
+  - ssl
+  - homelab
+home: https://cert-manager.io
+sources:
+  - https://github.com/cert-manager/cert-manager
+maintainers:
+  - name: Lab1830
+    email: admin@lab1830.com
+dependencies:
+  - name: cert-manager
+    version: v1.16.2
+    repository: https://charts.jetstack.io

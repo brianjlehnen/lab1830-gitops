@@ -1,0 +1,95 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    targetRevision: main
+    path: charts/applications/monitoring
+    helm:
+      values: |
+        kube-prometheus-stack:
+          grafana:
+            ingress:
+              enabled: true
+              ingressClassName: "nginx"
+              hosts:
+                - monitoring-production.lab1830.com
+              annotations:
+                cert-manager.io/cluster-issuer: "letsencrypt-prod-gitops"
+                nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+              tls:
+                - secretName: grafana-production-tls
+                  hosts:
+                    - monitoring-production.lab1830.com
+            persistence:
+              enabled: true
+              size: 10Gi
+
+          prometheus:
+            prometheusSpec:
+              retention: 15d
+              resources:
+                requests:
+                  cpu: 200m
+                  memory: 800Mi
+                limits:
+                  cpu: 1000m
+                  memory: 1200Mi
+              storageSpec:
+                volumeClaimTemplate:
+                  spec:
+                    accessModes: ["ReadWriteOnce"]
+                    resources:
+                      requests:
+                        storage: 50Gi
+
+          alertmanager:
+            alertmanagerSpec:
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              storage:
+                volumeClaimTemplate:
+                  spec:
+                    accessModes: ["ReadWriteOnce"]
+                    resources:
+                      requests:
+                        storage: 10Gi
+
+          kubeStateMetrics:
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 200m
+                memory: 256Mi
+
+          nodeExporter:
+            resources:
+              requests:
+                cpu: 20m
+                memory: 64Mi
+              limits:
+                cpu: 200m
+                memory: 128Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring-production
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

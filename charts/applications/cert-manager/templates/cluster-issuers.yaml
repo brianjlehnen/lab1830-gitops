@@ -1,0 +1,32 @@
+{{- if .Values.clusterIssuers.selfsigned.enabled }}
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ .Values.clusterIssuers.selfsigned.name }}
+  labels:
+    {{- include "cert-manager.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}
+{{- end }}
+
+{{- if .Values.clusterIssuers.letsencrypt.enabled }}
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ .Values.clusterIssuers.letsencrypt.name }}
+  labels:
+    {{- include "cert-manager.labels" . | nindent 4 }}
+spec:
+  acme:
+    email: {{ .Values.clusterIssuers.letsencrypt.email }}
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: {{ .Values.clusterIssuers.letsencrypt.name }}
+    solvers:
+      - dns01:
+          cloudflare:
+            email: {{ .Values.clusterIssuers.letsencrypt.email }}
+            apiTokenSecretRef:
+              name: {{ .Values.clusterIssuers.letsencrypt.cloudflare.secretName }}
+              key: api-token
+{{- end }}

@@ -1,0 +1,50 @@
+# Default values for cert-manager homelab deployment
+cert-manager:
+  crds:
+    enabled: true
+  
+  prometheus:
+    enabled: true
+    servicemonitor:
+      enabled: true
+  
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  
+  webhook:
+    timeoutSeconds: 30
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
+  
+  cainjector:
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
+
+# Default cluster issuers (both available, controlled via ArgoCD)
+clusterIssuers:
+  selfsigned:
+    enabled: true
+    name: selfsigned-clusterissuer
+  
+  letsencrypt:
+    enabled: false  # Controlled via ArgoCD override
+    name: letsencrypt-prod
+    email: admin@lab1830.com
+    cloudflare:
+      enabled: false  # Controlled via ArgoCD override
+      secretName: cloudflare-api-token-secret
