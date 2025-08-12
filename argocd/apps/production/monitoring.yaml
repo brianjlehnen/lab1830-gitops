@@ -19,14 +19,14 @@ spec:
               enabled: true
               ingressClassName: "nginx"
               hosts:
-                - monitoring-production.lab1830.com
+                - grafana.lab1830.com
               annotations:
                 cert-manager.io/cluster-issuer: "letsencrypt-prod-gitops"
                 nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
               tls:
                 - secretName: grafana-production-tls
                   hosts:
-                    - monitoring-production.lab1830.com
+                    - grafana.lab1830.com
             persistence:
               enabled: true
               size: 10Gi
