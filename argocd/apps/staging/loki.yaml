@@ -1,0 +1,91 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    chart: loki
+    repoURL: https://grafana.github.io/helm-charts
+    targetRevision: 6.35.1
+    helm:
+      values: |
+        # Single binary deployment for staging
+        deploymentMode: SingleBinary
+        
+        loki:
+          auth_enabled: false
+          commonConfig:
+            replication_factor: 1
+          limits_config:
+            retention_period: 72h
+            ingestion_rate_mb: 8
+            ingestion_burst_size_mb: 16
+          storage:
+            type: filesystem
+            filesystem:
+              chunks_directory: /var/loki/chunks
+              rules_directory: /var/loki/rules
+          schemaConfig:
+            configs:
+              - from: 2020-10-24
+                store: tsdb
+                object_store: filesystem
+                schema: v13
+                index:
+                  prefix: index_
+                  period: 24h
+        
+        # Single binary configuration
+        singleBinary:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          persistence:
+            enabled: true
+            size: 5Gi
+            storageClass: "local-path"
+          affinity: {}
+        
+        # Explicitly disable distributed components
+        read:
+          replicas: 0
+        write:
+          replicas: 0
+        backend:
+          replicas: 0
+        
+        # Disable optional components for staging
+        gateway:
+          enabled: false
+        chunksCache:
+          enabled: false
+        resultsCache:
+          enabled: false
+        
+        # Disable monitoring components for simplicity
+        monitoring:
+          lokiCanary:
+            enabled: false
+        
+        # Disable test pods
+        test:
+          enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

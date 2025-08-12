@@ -1,0 +1,55 @@
+# Image configuration
+image:
+  repository: grafana/loki
+  tag: "3.5.1"
+  pullPolicy: IfNotPresent
+
+# Resources
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 3100
+
+# Persistence
+persistence:
+  enabled: true
+  storageClass: "nfs-logs"
+  accessMode: ReadWriteOnce
+  size: 10Gi
+
+# Security context
+securityContext:
+  fsGroup: 10001
+  runAsGroup: 10001
+  runAsNonRoot: true
+  runAsUser: 10001
+
+# Loki configuration (this is what your configmap template expects)
+config:
+  server:
+    http_listen_port: 3100
+    grpc_listen_port: 9095
+  common:
+    path_prefix: /loki
+    storage:
+      filesystem:
+        chunks_directory: /loki/chunks
+        rules_directory: /loki/rules
+    replication_factor: 1
+  schema_config:
+    configs:
+      - from: 2020-10-24
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
