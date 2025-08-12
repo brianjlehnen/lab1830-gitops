@@ -18,18 +18,34 @@ spec:
     helm:
       valueFiles:
         - values.yaml
-      # Production uses defaults from values.yaml, minimal overrides
       values: |
-        # Production environment - mostly using defaults
-        wireguard:
-          password: "secure-production-password-change-me"
+        # Production environment requires privileged mode for Wireguard sysctls
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+              - NET_ADMIN
+              - NET_RAW
+              - SYS_MODULE
+          runAsUser: 0
         
-        # Add cert-manager TLS automation
+        # Production storage
+        persistence:
+          storageClass: "nfs-client"
+        
+        # Production ingress
+        wireguard:
+          serverUrl: "wireguard.lab1830.com:51820"
+          password: "secure-production-password"
+        
         ingress:
-          annotations:
-            cert-manager.io/cluster-issuer: "letsencrypt-prod-gitops"
+          hosts:
+            - host: wireguard.lab1830.com
+              paths:
+                - path: /
+                  pathType: Prefix
           tls:
-            - secretName: wireguard-tls-gitops
+            - secretName: wireguard-tls
               hosts:
                 - wireguard.lab1830.com
   destination:
