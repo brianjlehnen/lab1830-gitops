@@ -1,8 +1,11 @@
 nfs:
   server: 192.168.4.159
-
 storageClasses:
   nfsLogs:
     name: nfs-logs
     share: /volume1/Logs
+    reclaimPolicy: Retain
+  nfsClient:
+    name: nfs-client
+    share: /volume1/Backups
     reclaimPolicy: Retain
