@@ -5,42 +5,44 @@ metadata:
   labels:
     {{- include "homepage.labels" . | nindent 4 }}
 data:
+  kubernetes.yaml: |
+    mode: cluster
+  
   settings.yaml: |
-    title: Homepage - Staging Environment
+    title: Lab1830 HomeLab
     favicon: https://github.com/gethomepage/homepage/raw/main/public/android-chrome-192x192.png
     theme: dark
     color: slate
     target: _blank
     headerStyle: boxed
     hideVersion: true
-    
-  services.yaml: |
-    - Infrastructure:
-        - ArgoCD:
-            href: https://argocd.lab1830.com
-            description: GitOps Platform
-            icon: argocd.png
-        - Grafana:
-            href: https://grafana.lab1830.com
-            description: Monitoring
-            icon: grafana.png
-    
-    - Media:
-        - Plex:
-            href: https://plex.lab1830.com
-            description: Media Server
-            icon: plex.png
-
-  bookmarks.yaml: |
-    - Development:
-        - GitHub:
-            - href: https://github.com/brianjlehnen/homelab-gitops
-              icon: github.png
-        - Lab1830:
-            - href: https://github.com/brianjlehnen
-              icon: github.png
+    layout:
+      Infrastructure:
+        style: column
+        columns: 1
+      Monitoring & Logs:
+        style: column  
+        columns: 1
+      Management:
+        style: column
+        columns: 1
+      Utilities & Apps:
+        style: column
+        columns: 1
+      Media Management:
+        style: column
+        columns: 1
+      Media Downloads:
+        style: column
+        columns: 1
 
   widgets.yaml: |
+    - resources:
+        backend: resources
+        expanded: true
+        cpu: true
+        memory: true
+        disk: /
     - search:
         provider: google
         target: _blank
@@ -51,5 +53,177 @@ data:
           dateStyle: short
           hourCycle: h23
 
-  kubernetes.yaml: |
-    mode: cluster
+  services.yaml: |
+    - Infrastructure:
+        - AdGuard Home:
+            href: https://adguard.lab1830.com
+            description: Network-wide DNS filtering & ad blocking
+            icon: adguard-home
+            
+        - Synology NAS:
+            href: https://nas.lab1830.com
+            description: Network storage & file services
+            icon: synology-dsm
+            
+        - Traefik:
+            href: https://traefik.lab1830.com
+            description: Reverse proxy & SSL termination
+            icon: traefik
+
+    - Monitoring & Logs:
+        - Grafana:
+            href: https://grafana.lab1830.com
+            description: Metrics visualization & alerting
+            icon: grafana
+              
+        - Dozzle:
+            href: https://dozzle.lab1830.com
+            description: Real-time container log viewer
+            icon: dozzle
+
+        - Uptime Kuma:
+            href: https://kuma.lab1830.com
+            description: Service availability monitoring
+            icon: uptime-kuma
+
+        - Speedtest Tracker:
+            href: https://speedtest.lab1830.com
+            description: Internet speed monitoring and history
+            icon: speedtest-tracker.png
+
+        - SmokePing:
+            href: https://smokeping.lab1830.com
+            description: Network latency monitoring & graphing
+            icon: smokeping
+
+    - Management:
+        - Argo CD:
+            href: https://argocd.lab1830.com
+            description: GitOps deployment controller
+            icon: argo-cd
+            
+        - Vault:
+            href: https://vault.lab1830.com
+            description: Enterprise secrets management
+            icon: vault
+            
+        - Portainer:
+            href: https://portainer.lab1830.com
+            description: Docker container management
+            icon: portainer
+            
+        - Dockge:
+            href: https://dockge.lab1830.com
+            description: Docker compose stack manager
+            icon: dockge
+
+    - Utilities & Apps:
+        - Mealie:
+            href: https://mealie.lab1830.com
+            description: Recipe management & meal planning
+            icon: mealie
+
+        - Grocy:
+            href: https://grocy.lab1830.com
+            description: Grocery & household management
+            icon: grocy
+
+    - Media Management:
+        - Plex:
+            href: https://plex.lab1830.com
+            description: Media streaming platform
+            icon: plex
+
+        - Jellyfin:
+            href: https://jellyfin.lab1830.com
+            description: Media streaming platform
+            icon: jellyfin
+            
+        - Overseerr:
+            href: https://overseerr.lab1830.com
+            description: Media request & discovery portal
+            icon: overseerr
+            
+        - Tautulli:
+            href: https://tautulli.lab1830.com
+            description: Plex analytics & monitoring
+            icon: tautulli
+
+    - Media Downloads:
+        - Radarr:
+            href: https://radarr.lab1830.com
+            description: Movie collection automation
+            icon: radarr
+            
+        - Sonarr:
+            href: https://sonarr.lab1830.com
+            description: TV series collection automation
+            icon: sonarr
+            
+        - Prowlarr:
+            href: https://prowlarr.lab1830.com
+            description: Indexer management & search
+            icon: prowlarr
+            
+        - SABnzbd:
+            href: https://sabnzbd.lab1830.com
+            description: Usenet download client
+            icon: sabnzbd
+        
+        - NZBGet:
+            href: https://nzbget.lab1830.com
+            description: Usenet download client
+            icon: nzbget
+
+  bookmarks.yaml: |
+    - Development:
+        - Homelab Repository:
+            - abbr: GH
+              href: https://github.com/brianjlehnen/homelab-gitops
+              icon: github-light
+              
+    - Learning & Documentation:
+        - KodeKloud:
+            - abbr: KC
+              href: https://learn.kodekloud.com/user/dashboard
+              icon: icloud
+        - KubeCraft:
+            - abbr: KubeC
+              href: https://www.skool.com/kubecraft
+              icon: kubecraft
+        - Kubernetes Docs:
+            - abbr: K8s
+              href: https://kubernetes.io/docs/concepts/
+              icon: kubernetes
+        - ArgoCD Docs:
+            - abbr: Argo
+              href: https://argo-cd.readthedocs.io/
+              icon: argo-cd
+        - Claude AI:
+            - abbr: AI
+              href: https://claude.ai/new
+              icon: claude-ai
+              
+    - Productivity:
+        - Obsidian Vault:
+            - abbr: OB
+              href: obsidian://open?vault=Zettelkasten
+              icon: obsidian
+        - Homelab Notes:
+            - abbr: Notes
+              href: https://notes.lab1830.com
+              icon: obsidian
+              
+    - Cloud Services:
+        - Cloudflare:
+            - abbr: CF
+              href: https://dash.cloudflare.com/login
+              icon: cloudflare
+        - Dreamhost:
+            - abbr: DH
+              href: https://panel.dreamhost.com/
+              icon: dream-host-light
+
+  docker.yaml: ""
+  custom.css: ""
+  custom.js: ""
