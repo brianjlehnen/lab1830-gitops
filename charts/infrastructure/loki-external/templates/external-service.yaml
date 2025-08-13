@@ -20,6 +20,7 @@ spec:
       protocol: TCP
       nodePort: 31000
   selector:
-    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: single-binary
     app.kubernetes.io/instance: loki-production
+    app.kubernetes.io/name: loki
 {{- end }}
