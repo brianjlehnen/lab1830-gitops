@@ -1,0 +1,25 @@
+{{- if not (contains "staging" .Release.Namespace) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki-production-external
+  namespace: logging
+  labels:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: external-access
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+  annotations:
+    argocd.argoproj.io/sync-options: Replace=true
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 3100
+      targetPort: 3100
+      protocol: TCP
+      nodePort: 31000
+  selector:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/instance: loki-production
+{{- end }}
