@@ -1,0 +1,2 @@
+# External service configuration for Loki
+# Enables Docker hosts (titan) to push logs to Kubernetes Loki

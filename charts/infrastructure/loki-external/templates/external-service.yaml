@@ -2,21 +2,24 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "loki.fullname" . }}-external
-  namespace: {{ .Release.Namespace }}
+  name: loki-production-external
+  namespace: logging
   labels:
-    {{- include "loki.labels" . | nindent 4 }}
+    app.kubernetes.io/name: loki
     app.kubernetes.io/component: external-access
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
   annotations:
     argocd.argoproj.io/sync-options: Replace=true
 spec:
   type: NodePort
   ports:
     - name: http
-      port: {{ .Values.service.port }}
-      targetPort: http
+      port: 3100
+      targetPort: 3100
       protocol: TCP
       nodePort: 31000
   selector:
-    {{- include "loki.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/instance: loki-production
 {{- end }}

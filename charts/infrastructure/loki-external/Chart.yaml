@@ -1,0 +1,6 @@
+apiVersion: v2
+name: loki-external
+description: External NodePort service for Loki Docker host access
+version: 1.0.0
+appVersion: "1.0"
+type: application
