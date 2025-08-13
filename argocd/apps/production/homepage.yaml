@@ -16,6 +16,10 @@ spec:
         - values.yaml
       values: |
         replicaCount: 2
+        # Add environment variable for host validation
+        env:
+          - name: HOMEPAGE_ALLOWED_HOSTS
+            value: "homepage.lab1830.com"
         ingress:
           enabled: true
           className: nginx
