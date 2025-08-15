@@ -1,0 +1,18 @@
+version: 2
+updates:
+  # Kubernetes container images
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Chicago"
+    target-branch: "staging"
+    labels:
+      - "dependencies"
+      - "staging"
+      - "docker"
+    commit-message:
+      prefix: "chore(staging)"
+      include: "scope"
