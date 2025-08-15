@@ -1,0 +1,106 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: wiz-staging
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: wiz-connector
+    app.kubernetes.io/component: security
+    environment: staging
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    path: charts/applications/wiz-connector
+    targetRevision: staging
+    helm:
+      values: |
+        # Staging-specific overrides
+        vault:
+          enabled: true
+          role: wiz-role
+          address: "https://vault-staging.lab1830.com"  # Replace with your staging Vault URL
+        
+        wiz-kubernetes-integration:
+          wiz-kubernetes-connector:
+            autoCreateConnector:
+              clusterFlavor: Kubernetes
+              connectorName: "lehnen-lab-staging"
+            wiz-broker:
+              enabled: true
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 100Mi
+                limits:
+                  cpu: 200m
+                  memory: 400Mi
+          
+          wiz-sensor:
+            sensorClusterName: "lehnen-wiz-sensor-staging"
+            resources:
+              requests:
+                cpu: 50m
+                memory: 100Mi
+              limits:
+                cpu: 200m
+                memory: 500Mi
+            nodeSelector:
+              kubernetes.io/os: linux
+            tolerations:
+              - operator: Exists
+            securityContext:
+              privileged: false
+              allowPrivilegeEscalation: true
+              capabilities:
+                add:
+                  - SYS_ADMIN
+                  - SYS_RESOURCE
+                  - SYS_PTRACE
+                  - NET_ADMIN
+            # Prefer not to run on control plane in staging
+            affinity:
+              nodeAffinity:
+                preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  preference:
+                    matchExpressions:
+                    - key: kubernetes.io/hostname
+                      operator: NotIn
+                      values:
+                      - staging-control
+          
+          wiz-admission-controller:
+            enabled: true
+            resources:
+              requests:
+                cpu: 25m
+                memory: 50Mi
+              limits:
+                cpu: 100m
+                memory: 150Mi
+            webhook:
+              failurePolicy: Ignore  # Permissive in staging
+              timeoutSeconds: 10
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: wiz
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  revisionHistoryLimit: 10

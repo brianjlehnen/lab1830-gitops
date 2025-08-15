@@ -1,0 +1,21 @@
+apiVersion: v2
+name: wiz-connector
+description: Wiz Kubernetes Integration - GitOps wrapper for official chart
+type: application
+version: 1.0.0
+appVersion: "latest"
+keywords:
+  - security
+  - monitoring
+  - runtime
+  - kubernetes
+home: https://www.wiz.io
+sources:
+  - git@github.com:brianjlehnen/homelab-gitops.git
+maintainers:
+  - name: brian
+    email: brian@lab1830.com
+dependencies:
+  - name: wiz-kubernetes-integration
+    version: "0.2.106"
+    repository: https://charts.wiz.io

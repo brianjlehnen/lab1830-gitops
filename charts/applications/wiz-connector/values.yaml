@@ -1,0 +1,36 @@
+# Minimal default values - everything overridden at ArgoCD level
+global:
+  nameOverride: ""
+  fullnameOverride: ""
+
+# Namespace configuration
+namespace:
+  create: true
+  name: wiz
+
+# Vault secret management
+vault:
+  enabled: true
+  role: wiz-role
+
+# Minimal subchart values - ArgoCD will override these
+wiz-kubernetes-integration:
+  global:
+    wizApiToken:
+      secret:
+        create: false
+        name: wiz-api-token
+  
+  wiz-kubernetes-connector:
+    enabled: true
+    wiz-broker:
+      enabled: true
+  
+  wiz-sensor:
+    enabled: true
+    imagePullSecret:
+      create: false
+      name: sensor-image-pull
+  
+  wiz-admission-controller:
+    enabled: true
