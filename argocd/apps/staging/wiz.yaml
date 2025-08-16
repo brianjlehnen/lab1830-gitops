@@ -19,15 +19,21 @@ spec:
       values: |
         # Staging-specific overrides
         vault:
-          enabled: true
+          enabled: false  # Disable Vault injection - using ESO instead
           role: wiz-role
-          address: "https://vault-staging.lab1830.com"  # Replace with your staging Vault URL
+          address: "https://vault-staging.lab1830.com"
         
         wiz-kubernetes-integration:
+          global:
+            wizApiToken:
+              secret:
+                create: false
+                name: wiz-api-token  # ESO will create this
+          
           wiz-kubernetes-connector:
             autoCreateConnector:
               clusterFlavor: Kubernetes
-              connectorName: "lehnen-lab-staging"
+              connectorName: "lehnen-lab-staging-v2"  # Updated to new staging connector
             wiz-broker:
               enabled: true
               resources:
@@ -39,7 +45,11 @@ spec:
                   memory: 400Mi
           
           wiz-sensor:
-            sensorClusterName: "lehnen-wiz-sensor-staging"
+            enabled: true
+            imagePullSecret:
+              create: false
+              name: sensor-image-pull  # ESO will create this
+            sensorClusterName: "lehnen-lab-staging-v2"  # Updated to match connector
             resources:
               requests:
                 cpu: 50m
