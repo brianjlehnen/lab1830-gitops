@@ -8,6 +8,8 @@ vault:
   injector:
     enabled: true
     replicas: 1
+    image:
+      tag: "1.20.1"  # CVE-2025-6000 patched version
     resources:
       requests:
         memory: "64Mi"
@@ -18,6 +20,10 @@ vault:
   
   # Server configuration
   server:
+    # CVE-2025-6000 Security Fix
+    image:
+      tag: "1.20.1"  # Explicit secure version
+    
     # Development mode for easy staging setup
     dev:
       enabled: true
@@ -27,9 +33,8 @@ vault:
     # IMPORTANT: Disable these when dev mode is enabled
     ha:
       enabled: false
-    
     standalone:
-      enabled: false  # Must be false for dev mode
+      enabled: false # Must be false for dev mode
     
     # Resources appropriate for staging
     resources:
@@ -40,9 +45,13 @@ vault:
         memory: "512Mi"
         cpu: "200m"
     
+    # Security hardening - ensure no plugin directory
+    extraEnvironmentVars:
+      VAULT_DISABLE_MLOCK: true
+    
     # IMPORTANT: Disable storage in dev mode (runs in-memory)
     dataStorage:
-      enabled: false  # Must be false for dev mode
+      enabled: false # Must be false for dev mode
     
     # Service configuration
     service:

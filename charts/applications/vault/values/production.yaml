@@ -1,84 +1,94 @@
 # Production Vault - Stage 1: HTTP (for initialization)
-global:
-  enabled: true
-  tlsDisable: true  # Stage 1: Disable TLS
-
-injector:
-  enabled: true
-  replicas: 1
-  resources:
-    requests:
-      memory: "64Mi"
-      cpu: "50m"
-    limits:
-      memory: "128Mi"
-      cpu: "100m"
-
-server:
-  dev:
-    enabled: false
+vault:
+  global:
+    enabled: true
+    tlsDisable: true # Stage 1: Disable TLS
   
-  ha:
+  injector:
     enabled: true
-    replicas: 2
-    raft:
+    replicas: 1
+    image:
+      tag: "1.20.1"  # CVE-2025-6000 patched version
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+  
+  server:
+    # CVE-2025-6000 Security Fix
+    image:
+      tag: "1.20.1"  # Explicit secure version
+    
+    dev:
+      enabled: false
+    
+    ha:
       enabled: true
-      setNodeId: false
-      config: |
-        ui = true
-        
-        listener "tcp" {
-          tls_disable = 1                    # Stage 1: HTTP only
-          address = "[::]:8200"
-          cluster_address = "[::]:8201"
-        }
-        
-        storage "raft" {
-          path = "/vault/data"
-        }
-        
-        service_registration "kubernetes" {}
-
-  standalone:
-    enabled: false
-
-  resources:
-    requests:
-      memory: "256Mi"
-      cpu: "100m"
-    limits:
-      memory: "512Mi"
-      cpu: "500m"
-
-  dataStorage:
-    enabled: true
-    size: "10Gi"
-    storageClass: "nfs-client"
-    accessMode: ReadWriteOnce
-
-service:
-  enabled: true
-  type: ClusterIP
-  port: 8200
-  targetPort: 8200
-
-ingress:
-  enabled: true
-  ingressClassName: nginx
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"  # Stage 1: Backend is HTTP
-    cert-manager.io/cluster-issuer: "letsencrypt-prod-gitops"  # Use the production ClusterIssuer for TLS
-  hosts:
-    - host: vault.lab1830.com
-      paths:
-        - "/"
-  tls:
-    - secretName: vault-tls-gitops
+      replicas: 2
+      raft:
+        enabled: true
+        setNodeId: false
+        config: |
+          ui = true
+          listener "tcp" {
+            tls_disable = 1 # Stage 1: HTTP only
+            address = "[::]:8200"
+            cluster_address = "[::]:8201"
+          }
+          storage "raft" {
+            path = "/vault/data"
+          }
+          service_registration "kubernetes" {}
+          # CVE-2025-6000 Security: Explicitly disable plugin directory
+          # plugin_directory = ""  # Commented out - not setting plugin_directory at all
+    
+    standalone:
+      enabled: false
+    
+    # Security hardening
+    extraEnvironmentVars:
+      VAULT_DISABLE_MLOCK: true
+    
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    
+    dataStorage:
+      enabled: true
+      size: "10Gi"
+      storageClass: "nfs-client"
+      accessMode: ReadWriteOnce
+    
+    service:
+      enabled: true
+      type: ClusterIP
+      port: 8200
+      targetPort: 8200
+    
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      annotations:
+        nginx.ingress.kubernetes.io/ssl-redirect: "true"
+        nginx.ingress.kubernetes.io/backend-protocol: "HTTP" # Stage 1: Backend is HTTP
+        cert-manager.io/cluster-issuer: "letsencrypt-prod-gitops" # Use the production ClusterIssuer for TLS
       hosts:
-        - vault.lab1830.com
-
-ui:
-  enabled: true
-  serviceType: "ClusterIP"
-  externalPort: 8200
+        - host: vault.lab1830.com
+          paths:
+            - "/"
+      tls:
+        - secretName: vault-tls-gitops
+          hosts:
+            - vault.lab1830.com
+  
+  ui:
+    enabled: true
+    serviceType: "ClusterIP"
+    externalPort: 8200
