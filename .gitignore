@@ -16,8 +16,14 @@ Thumbs.db
 Thumbs.db
 
 # Kubernetes secrets (if any local ones)
-*secret*.yaml
-*Secret*.yaml
+*-secret.yaml
+secret.yaml
+secrets/
+*.secret
+
+# But allow external-secrets files
+!external-secrets.yaml
+!*external-secrets*
 
 # Helm
 *.tgz

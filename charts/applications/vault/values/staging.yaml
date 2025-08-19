@@ -1,13 +1,15 @@
-# Staging Vault - Development mode with simplified configuration
+# Staging Vault - Development mode with CVE-2025-6000 fix
 vault:
   global:
     enabled: true
-    tlsDisable: true # Simplified TLS for staging
+    tlsDisable: true
   
-  # Injector for secret injection into pods
   injector:
     enabled: true
     replicas: 1
+    image:
+      repository: hashicorp/vault-k8s
+      tag: "1.4.0"  # Stable vault-k8s version (different from Vault server)
     resources:
       requests:
         memory: "64Mi"
@@ -16,22 +18,22 @@ vault:
         memory: "128Mi"
         cpu: "50m"
   
-  # Server configuration
   server:
-    # Development mode for easy staging setup
+    image:
+      repository: hashicorp/vault
+      tag: "1.20.1"  # CRITICAL: CVE-2025-6000 patched version
+    
     dev:
       enabled: true
       devRootToken: "staging-root-token-12345"
       devListenAddress: "0.0.0.0:8200"
     
-    # IMPORTANT: Disable these when dev mode is enabled
     ha:
       enabled: false
     
     standalone:
-      enabled: false  # Must be false for dev mode
+      enabled: false
     
-    # Resources appropriate for staging
     resources:
       requests:
         memory: "256Mi"
@@ -40,18 +42,18 @@ vault:
         memory: "512Mi"
         cpu: "200m"
     
-    # IMPORTANT: Disable storage in dev mode (runs in-memory)
-    dataStorage:
-      enabled: false  # Must be false for dev mode
+    extraEnvironmentVars:
+      VAULT_DISABLE_MLOCK: true
     
-    # Service configuration
+    dataStorage:
+      enabled: false
+    
     service:
       enabled: true
       type: ClusterIP
       port: 8200
       targetPort: 8200
     
-    # Staging ingress configuration
     ingress:
       enabled: true
       ingressClassName: nginx
@@ -61,10 +63,8 @@ vault:
         - host: vault-staging.lab1830.com
           paths:
             - "/"
-      # Remove TLS for staging simplicity
       tls: []
   
-  # UI configuration
   ui:
     enabled: true
     serviceType: "ClusterIP"

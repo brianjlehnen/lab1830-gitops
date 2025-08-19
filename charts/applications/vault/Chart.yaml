@@ -2,19 +2,23 @@ apiVersion: v2
 name: vault
 description: HashiCorp Vault for secrets management
 type: application
-version: 0.1.0
-appVersion: "1.15.2"
+version: 0.2.0  # Increment version for the security update
+appVersion: "1.20.1"  # Updated to patched version
 dependencies:
   - name: vault
-    version: "0.25.0"
+    version: "0.30.1"  # Updated from 0.25.0 to latest secure chart
     repository: "https://helm.releases.hashicorp.com"
 keywords:
   - vault
   - secrets
   - security
+  - cve-2025-6000-patched  # Add security context
 home: https://www.vaultproject.io
 sources:
   - https://github.com/hashicorp/vault-helm
 maintainers:
   - name: Lab1830
     email: admin@lab1830.com
+annotations:
+  security.lab1830.com/cve-remediation: "CVE-2025-6000"
+  security.lab1830.com/upgrade-date: "2025-08-19"
