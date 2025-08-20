@@ -16,19 +16,23 @@ spec:
         wiz-outpost-lite:
           agent:
             secretName: outpost-lite-agent-creds
+            clientId: "wgxq75hrlndpbktx3eupevf2xzcn22unyb4vvsu3qcoy37u4ogdw6"
+            clientSecret: "P7pJZBbXMxgpUFMLU8LhgDSOw1G8cYjaWwZtMkSOqY9TFOg8hAAJZMnGGTF359q2"
+            outpostId: "506746b0-32ca-4367-b7d8-0ab51dc5282b"
             outpostRegion: partition-1
           
-          # Disable encryption for now since we have the main functionality working
+          # Completely disable encryption
           encryption:
             create: false
+            secretName: ""
+            privateKey: ""
           
-          # Disable secret creation - we're using External Secrets
+          # Let the chart create its own secret and ignore External Secrets for now
           secret:
-            create: false
+            create: true
           
-          # Use the image pull secret from External Secrets (we'll fix this separately)
-          imagePullSecrets:
-            - name: wiz-outpost-lite-image-pull
+          # For now, don't use image pull secrets to avoid registry issues
+          imagePullSecrets: []
           
           resources:
             requests:
