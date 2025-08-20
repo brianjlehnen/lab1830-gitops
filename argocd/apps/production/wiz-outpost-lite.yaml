@@ -15,19 +15,20 @@ spec:
       values: |
         wiz-outpost-lite:
           agent:
-            secretName: outpost-lite-agent-creds
-            clientId: "wgxq75hrlndpbktx3eupevf2xzcn22unyb4vvsu3qcoy37u4ogdw6"
-            clientSecret: "P7pJZBbXMxgpUFMLU8LhgDSOw1G8cYjaWwZtMkSOqY9TFOg8hAAJZMnGGTF359q2"
-            outpostId: "506746b0-32ca-4367-b7d8-0ab51dc5282b"
+            secretName: outpost-lite-agent-creds  # This will be created by External Secrets
+            # Leave credentials empty - External Secrets will populate them
+            clientId: ""
+            clientSecret: ""
+            outpostId: ""
             outpostRegion: partition-1
           
-          # Disable encryption completely
+          # Disable encryption for now
           encryption:
             create: false
             secretName: "wiz-encryption-disabled"
             privateKey: ""
           
-          # Disable secret creation since we'll use External Secrets
+          # Disable secret creation - External Secrets will handle it
           secret:
             create: false
           
@@ -42,7 +43,6 @@ spec:
               cpu: 500m
               memory: 1Gi
           
-          # Keep service account creation disabled
           serviceAccount:
             create: false
   destination:
