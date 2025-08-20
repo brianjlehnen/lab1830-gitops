@@ -14,15 +14,21 @@ spec:
     helm:
       values: |
         agent:
-          clientId: "wgxq75hrlndpbktx3eupevf2xzcn22unyb4vvsu3qcoy37u4ogdw6"
-          clientSecret: "P7pJZBbXMxgpUFMLU8LhgDSOw1G8cYjaWwZtMkSOqY9TFOg8hAAJZMnGGTF359q2"
-          outpostId: "506746b0-32ca-4367-b7d8-0ab51dc5282b"
+          # Reference the External Secret
+          secretName: outpost-lite-agent-creds
           outpostRegion: partition-1
         
         encryption:
           create: false
         
-        # Enable VCS module to get the actual deployment
+        # External Secrets will create this
+        imagePullSecrets:
+          - name: wiz-outpost-lite-image-pull
+        
+        # Disable chart's secret creation - use External Secrets
+        secret:
+          create: false
+        
         modules:
           vcs:
             enabled: true
