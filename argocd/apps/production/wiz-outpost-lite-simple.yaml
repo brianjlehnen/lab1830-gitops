@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: wiz-outpost-lite-direct
+  name: wiz-outpost-lite-simple
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -14,32 +14,24 @@ spec:
     helm:
       values: |
         agent:
-          # Reference the External Secret
-          secretName: outpost-lite-agent-creds
+          secretName: wiz-outpost-lite-credentials
+          outpostId: "506746b0-32ca-4367-b7d8-0ab51dc5282b"
           outpostRegion: partition-1
         
         encryption:
-          create: false
-        
-        # External Secrets will create this
-        imagePullSecrets:
-          - name: wiz-outpost-lite-image-pull
-        
-        # Disable chart's secret creation - use External Secrets
-        secret:
-          create: false
+          create: true
+          secretName: "wiz-outpost-encryption-key"
+          privateKey: ""
         
         modules:
           vcs:
             enabled: true
         
-        resources:
-          requests:
-            cpu: 100m
-            memory: 256Mi
-          limits:
-            cpu: 500m
-            memory: 1Gi
+        imagePullSecrets:
+          - name: wiz-registry-secret
+        
+        secret:
+          create: false
   destination:
     server: https://kubernetes.default.svc
     namespace: outpost-lite
