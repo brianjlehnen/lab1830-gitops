@@ -13,8 +13,33 @@ spec:
     path: charts/applications/wiz-outpost-lite
     helm:
       values: |
-        # Deploy only External Secrets first - no Wiz chart dependency yet
-        externalSecretsOnly: true
+        wiz-outpost-lite:
+          agent:
+            secretName: outpost-lite-agent-creds
+            outpostRegion: partition-1
+          
+          # Disable encryption for now since we have the main functionality working
+          encryption:
+            create: false
+          
+          # Disable secret creation - we're using External Secrets
+          secret:
+            create: false
+          
+          # Use the image pull secret from External Secrets (we'll fix this separately)
+          imagePullSecrets:
+            - name: wiz-outpost-lite-image-pull
+          
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          
+          serviceAccount:
+            create: false
   destination:
     server: https://kubernetes.default.svc
     namespace: outpost-lite
