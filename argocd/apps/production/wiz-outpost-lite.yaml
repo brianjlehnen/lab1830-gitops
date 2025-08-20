@@ -15,13 +15,20 @@ spec:
       values: |
         wiz-outpost-lite:
           agent:
-            # Provide credentials directly instead of existingSecret
-            clientId: ""  # Will be populated by External Secrets
-            clientSecret: ""  # Will be populated by External Secrets
-            outpostId: ""  # Will be populated by External Secrets
+            secretName: outpost-lite-agent-creds
+            clientId: "wgxq75hrlndpbktx3eupevf2xzcn22unyb4vvsu3qcoy37u4ogdw6"
+            clientSecret: "P7pJZBbXMxgpUFMLU8LhgDSOw1G8cYjaWwZtMkSOqY9TFOg8hAAJZMnGGTF359q2"
+            outpostId: "506746b0-32ca-4367-b7d8-0ab51dc5282b"
+            outpostRegion: partition-1
           
-          # Try without custom encryption for now
+          # Disable encryption completely
           encryption:
+            create: false
+            secretName: "wiz-encryption-disabled"
+            privateKey: ""
+          
+          # Disable secret creation since we'll use External Secrets
+          secret:
             create: false
           
           imagePullSecrets:
@@ -35,9 +42,9 @@ spec:
               cpu: 500m
               memory: 1Gi
           
-          nodeSelector: {}
-          tolerations: []
-          affinity: {}
+          # Keep service account creation disabled
+          serviceAccount:
+            create: false
   destination:
     server: https://kubernetes.default.svc
     namespace: outpost-lite
