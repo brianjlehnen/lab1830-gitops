@@ -13,38 +13,8 @@ spec:
     path: charts/applications/wiz-outpost-lite
     helm:
       values: |
-        wiz-outpost-lite:
-          agent:
-            secretName: outpost-lite-agent-creds  # This will be created by External Secrets
-            # Leave credentials empty - External Secrets will populate them
-            clientId: ""
-            clientSecret: ""
-            outpostId: ""
-            outpostRegion: partition-1
-          
-          # Disable encryption for now
-          encryption:
-            create: false
-            secretName: "wiz-encryption-disabled"
-            privateKey: ""
-          
-          # Disable secret creation - External Secrets will handle it
-          secret:
-            create: false
-          
-          imagePullSecrets:
-            - name: wiz-outpost-lite-image-pull
-          
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 1Gi
-          
-          serviceAccount:
-            create: false
+        # Deploy only External Secrets first - no Wiz chart dependency yet
+        externalSecretsOnly: true
   destination:
     server: https://kubernetes.default.svc
     namespace: outpost-lite
