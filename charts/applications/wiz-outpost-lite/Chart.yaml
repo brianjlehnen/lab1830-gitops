@@ -17,5 +17,5 @@ maintainers:
     email: brian@lab1830.com
 dependencies:
   - name: wiz-outpost-lite
-    version: "~1.0.0"
+    version: "0.1.20250615"
     repository: https://charts.wiz.io
