@@ -2,13 +2,14 @@
 vault:
   global:
     enabled: true
-    tlsDisable: true # Stage 1: Disable TLS
+    tlsDisable: true
   
   injector:
     enabled: true
     replicas: 1
     image:
-      tag: "1.20.1"  # CVE-2025-6000 patched version
+      repository: hashicorp/vault-k8s
+      tag: "1.4.0"  # Stable vault-k8s version (not 1.20.1)
     resources:
       requests:
         memory: "64Mi"
@@ -18,9 +19,9 @@ vault:
         cpu: "100m"
   
   server:
-    # CVE-2025-6000 Security Fix
     image:
-      tag: "1.20.1"  # Explicit secure version
+      repository: hashicorp/vault
+      tag: "1.20.1"  # CVE-2025-6000 patched version
     
     dev:
       enabled: false
@@ -34,7 +35,7 @@ vault:
         config: |
           ui = true
           listener "tcp" {
-            tls_disable = 1 # Stage 1: HTTP only
+            tls_disable = 1
             address = "[::]:8200"
             cluster_address = "[::]:8201"
           }
@@ -42,13 +43,10 @@ vault:
             path = "/vault/data"
           }
           service_registration "kubernetes" {}
-          # CVE-2025-6000 Security: Explicitly disable plugin directory
-          # plugin_directory = ""  # Commented out - not setting plugin_directory at all
     
     standalone:
       enabled: false
     
-    # Security hardening
     extraEnvironmentVars:
       VAULT_DISABLE_MLOCK: true
     
@@ -63,7 +61,7 @@ vault:
     dataStorage:
       enabled: true
       size: "10Gi"
-      storageClass: "nfs-client"
+      storageClass: "local-path"
       accessMode: ReadWriteOnce
     
     service:
@@ -77,8 +75,8 @@ vault:
       ingressClassName: nginx
       annotations:
         nginx.ingress.kubernetes.io/ssl-redirect: "true"
-        nginx.ingress.kubernetes.io/backend-protocol: "HTTP" # Stage 1: Backend is HTTP
-        cert-manager.io/cluster-issuer: "letsencrypt-prod-gitops" # Use the production ClusterIssuer for TLS
+        nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+        cert-manager.io/cluster-issuer: "letsencrypt-prod-gitops"
       hosts:
         - host: vault.lab1830.com
           paths:
