@@ -1,3 +1,4 @@
+# charts/applications/cert-manager/templates/clusterissuers.yaml
 {{- if .Values.clusterIssuers.selfsigned.enabled }}
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
@@ -9,11 +10,35 @@ spec:
   selfSigned: {}
 {{- end }}
 
-{{- if .Values.clusterIssuers.letsencrypt.enabled }}
+{{- if .Values.clusterIssuers.letsencrypt.staging.enabled }}
+---
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
-  name: {{ .Values.clusterIssuers.letsencrypt.name }}
+  name: letsencrypt-staging
+  labels:
+    {{- include "cert-manager.labels" . | nindent 4 }}
+spec:
+  acme:
+    email: {{ .Values.clusterIssuers.letsencrypt.email }}
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-staging
+    solvers:
+    - dns01:
+        cloudflare:
+          email: {{ .Values.clusterIssuers.letsencrypt.email }}
+          apiTokenSecretRef:
+            name: {{ .Values.clusterIssuers.letsencrypt.cloudflare.secretName }}
+            key: api-token
+{{- end }}
+
+{{- if .Values.clusterIssuers.letsencrypt.production.enabled }}
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
   labels:
     {{- include "cert-manager.labels" . | nindent 4 }}
 spec:
@@ -21,12 +46,12 @@ spec:
     email: {{ .Values.clusterIssuers.letsencrypt.email }}
     server: https://acme-v02.api.letsencrypt.org/directory
     privateKeySecretRef:
-      name: {{ .Values.clusterIssuers.letsencrypt.name }}
+      name: letsencrypt-prod
     solvers:
-      - dns01:
-          cloudflare:
-            email: {{ .Values.clusterIssuers.letsencrypt.email }}
-            apiTokenSecretRef:
-              name: {{ .Values.clusterIssuers.letsencrypt.cloudflare.secretName }}
-              key: api-token
+    - dns01:
+        cloudflare:
+          email: {{ .Values.clusterIssuers.letsencrypt.email }}
+          apiTokenSecretRef:
+            name: {{ .Values.clusterIssuers.letsencrypt.cloudflare.secretName }}
+            key: api-token
 {{- end }}

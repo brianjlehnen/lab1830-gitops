@@ -22,13 +22,19 @@ spec:
               cpu: 100m
               memory: 128Mi
         
-        # Staging: Only self-signed certificates
         clusterIssuers:
           selfsigned:
             enabled: true
             name: selfsigned-clusterissuer-staging
+          
           letsencrypt:
-            enabled: false
+            email: brian@lab1830.com
+            staging:
+              enabled: true
+            production:
+              enabled: true
+            cloudflare:
+              secretName: cloudflare-api-token-secret
   destination:
     server: https://kubernetes.default.svc
     namespace: cert-manager
