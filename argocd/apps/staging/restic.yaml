@@ -15,9 +15,14 @@ spec:
       valueFiles:
         - values.yaml
       values: |
-        # Staging-specific values
+        # Staging-specific values - Vault disabled
         vault:
-          secretPath: secret/backup/restic/staging
+          enabled: false
+
+        # Simple file-based backup for staging
+        restic:
+          repository: "file:///tmp/staging-backup"
+          password: "staging-test-password"
 
         backup:
           pvc:
