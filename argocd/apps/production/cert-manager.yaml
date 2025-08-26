@@ -21,18 +21,19 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
-        
-        # Production: Enable Let's Encrypt with different name
+
+        # Production: Enable Let's Encrypt with staging/production structure
         clusterIssuers:
           selfsigned:
             enabled: true
             name: selfsigned-clusterissuer-gitops
           letsencrypt:
-            enabled: true
-            name: letsencrypt-prod-gitops  # Different name to avoid conflict
             email: admin@lab1830.com
+            staging:
+              enabled: false  # Disable staging ClusterIssuer in production
+            production:
+              enabled: true   # Enable production ClusterIssuer
             cloudflare:
-              enabled: true
               secretName: cloudflare-api-token-secret
   destination:
     server: https://kubernetes.default.svc
