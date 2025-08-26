@@ -40,6 +40,7 @@ spec:
             - |
               echo "Starting Restic backup service..."
               
+              {{- if .Values.vault.enabled }}
               # Source Vault-injected environment
               if [ -f /vault/secrets/restic-config ]; then
                 echo "Loading configuration from Vault..."
@@ -48,6 +49,12 @@ spec:
                 echo "ERROR: No Vault configuration found"
                 exit 1
               fi
+              {{- else }}
+              # Use direct configuration for non-Vault deployments
+              echo "Using direct configuration..."
+              export RESTIC_REPOSITORY="{{ .Values.restic.repository }}"
+              export RESTIC_PASSWORD="{{ .Values.restic.password }}"
+              {{- end }}
               
               # Initialize repository if it doesn't exist
               echo "Initializing Restic repository..."
@@ -67,10 +74,20 @@ spec:
               mountPath: /backup-data
               readOnly: true
             {{- end }}
+            {{- if .Values.vault.enabled }}
+            - name: vault-secrets
+              mountPath: /vault/secrets
+              readOnly: true
+            {{- end }}
       volumes:
         {{- if .Values.backup.pvc.enabled }}
         - name: backup-data
           emptyDir: {}
+        {{- end }}
+        {{- if .Values.vault.enabled }}
+        - name: vault-secrets
+          emptyDir:
+            medium: Memory
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
