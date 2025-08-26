@@ -1,0 +1,11 @@
+# charts/applications/goldilocks/Chart.yaml
+apiVersion: v2
+name: goldilocks
+description: Resource optimization and right-sizing recommendations
+type: application
+version: 0.1.0
+appVersion: "v4.11.0"
+dependencies:
+- name: goldilocks
+  version: "10.1.0"
+  repository: "https://charts.fairwinds.com/stable"

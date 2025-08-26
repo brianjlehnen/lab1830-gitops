@@ -1,0 +1,104 @@
+# charts/applications/goldilocks/values.yaml
+goldilocks:
+  # Enable the dashboard UI
+  dashboard:
+    enabled: true
+    ingress:
+      enabled: true
+      className: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-production
+        nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      hosts:
+      - host: goldilocks.lab1830.com
+        paths:
+        - path: /
+          pathType: Prefix
+      tls:
+      - secretName: goldilocks-tls
+        hosts:
+        - goldilocks.lab1830.com
+    
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
+
+  # Controller manages VPA objects
+  controller:
+    enabled: true
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
+
+  # VPA (Vertical Pod Autoscaler) - required for recommendations
+  vpa:
+    enabled: true
+    # Create VPA CRDs
+    updater:
+      enabled: false  # We only want recommendations, not automatic updates
+    recommender:
+      enabled: true
+      resources:
+        requests:
+          cpu: 50m
+          memory: 100Mi
+        limits:
+          cpu: 200m
+          memory: 200Mi
+    admissionController:
+      enabled: false  # Disable automatic pod mutations
+
+  # Install metrics-server if not present (you already have it)
+  metrics-server:
+    enabled: false
+
+---
+# argocd/apps/production/goldilocks.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: goldilocks-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    targetRevision: main
+    path: charts/applications/goldilocks
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+        # Production-specific overrides
+        goldilocks:
+          dashboard:
+            ingress:
+              hosts:
+              - host: goldilocks.lab1830.com
+                paths:
+                - path: /
+                  pathType: Prefix
+              tls:
+              - secretName: goldilocks-tls
+                hosts:
+                - goldilocks.lab1830.com
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: goldilocks
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

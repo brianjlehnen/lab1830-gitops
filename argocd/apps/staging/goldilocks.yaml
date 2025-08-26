@@ -1,0 +1,68 @@
+# argocd/apps/staging/goldilocks.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: goldilocks-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    targetRevision: staging
+    path: charts/applications/goldilocks
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+        # Staging-specific overrides
+        goldilocks:
+          dashboard:
+            ingress:
+              hosts:
+              - host: goldilocks-staging.lab1830.com
+                paths:
+                - path: /
+                  pathType: Prefix
+              tls:
+              - secretName: goldilocks-staging-tls
+                hosts:
+                - goldilocks-staging.lab1830.com
+            
+            resources:
+              requests:
+                cpu: 15m
+                memory: 24Mi
+              limits:
+                cpu: 50m
+                memory: 48Mi
+
+          controller:
+            resources:
+              requests:
+                cpu: 15m
+                memory: 24Mi
+              limits:
+                cpu: 50m
+                memory: 48Mi
+
+          vpa:
+            recommender:
+              resources:
+                requests:
+                  cpu: 25m
+                  memory: 64Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: goldilocks
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
