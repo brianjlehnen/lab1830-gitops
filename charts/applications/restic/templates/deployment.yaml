@@ -74,20 +74,10 @@ spec:
               mountPath: /backup-data
               readOnly: true
             {{- end }}
-            {{- if .Values.vault.enabled }}
-            - name: vault-secrets
-              mountPath: /vault/secrets
-              readOnly: true
-            {{- end }}
       volumes:
         {{- if .Values.backup.pvc.enabled }}
         - name: backup-data
           emptyDir: {}
-        {{- end }}
-        {{- if .Values.vault.enabled }}
-        - name: vault-secrets
-          emptyDir:
-            medium: Memory
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
