@@ -1,0 +1,41 @@
+# argocd/apps/production/goldilocks.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: goldilocks-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    targetRevision: main
+    path: charts/applications/goldilocks
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+        # Production-specific overrides
+        goldilocks:
+          dashboard:
+            ingress:
+              hosts:
+              - host: goldilocks.lab1830.com
+                paths:
+                - path: /
+                  pathType: Prefix
+              tls:
+              - secretName: goldilocks-tls
+                hosts:
+                - goldilocks.lab1830.com
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: goldilocks
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
