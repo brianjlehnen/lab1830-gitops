@@ -20,15 +20,44 @@ spec:
         goldilocks:
           dashboard:
             ingress:
+              enabled: false  # Disable broken upstream ingress
+              className: nginx
+              annotations:
+                cert-manager.io/cluster-issuer: letsencrypt-prod
+                nginx.ingress.kubernetes.io/ssl-redirect: "true"
               hosts:
-              - host: goldilocks.lab1830.com
-                paths:
-                - path: /
-                  pathType: Prefix
+                - host: goldilocks.lab1830.com
+                  paths:
+                    - path: /
+                      type: Prefix
               tls:
-              - secretName: goldilocks-tls
-                hosts:
-                - goldilocks.lab1830.com
+                - secretName: goldilocks-tls
+                  hosts:
+                    - goldilocks.lab1830.com
+            resources:
+              requests:
+                cpu: 25m
+                memory: 32Mi
+              limits:
+                cpu: 100m
+                memory: 64Mi
+          controller:
+            resources:
+              requests:
+                cpu: 25m
+                memory: 32Mi
+              limits:
+                cpu: 100m
+                memory: 64Mi
+          vpa:
+            recommender:
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 100Mi
+                limits:
+                  cpu: 200m
+                  memory: 200Mi
   destination:
     server: https://kubernetes.default.svc
     namespace: goldilocks
