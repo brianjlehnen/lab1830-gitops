@@ -22,7 +22,7 @@ spec:
               enabled: false
               className: nginx # Disable broken upstream ingress
               annotations:
-                cert-manager.io/cluster-issuer: letsencrypt-staging
+                cert-manager.io/cluster-issuer: letsencrypt-prod
                 nginx.ingress.kubernetes.io/ssl-redirect: "true"
               hosts:
                 - host: goldilocks-staging.lab1830.com
