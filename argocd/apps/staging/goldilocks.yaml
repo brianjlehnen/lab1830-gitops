@@ -19,8 +19,8 @@ spec:
         goldilocks:
           dashboard:
             ingress:
-              enabled: true
-              className: nginx
+              enabled: false
+              className: nginx # Disable broken upstream ingress
               annotations:
                 cert-manager.io/cluster-issuer: letsencrypt-staging
                 nginx.ingress.kubernetes.io/ssl-redirect: "true"
