@@ -38,25 +38,17 @@ spec:
           
           schedules:
             daily-cluster:
-              schedule: "0 2 * * *"  # 2 AM for staging (fixed cron format)
+              schedule: "0 2 * * *"  # 2 AM for staging
               template:
                 ttl: "72h"  # 3 days retention for staging
-          
-          # ServiceMonitor for staging Prometheus Operator
-          serviceMonitor:
-            enabled: true
-            additionalLabels:
-              release: monitoring-staging  # Use staging Prometheus
-            namespace: velero
-            interval: 30s
-            scrapeTimeout: 10s
-          
-          # Ensure service exposes metrics port
-          service:
-            annotations:
-              prometheus.io/scrape: "true"
-              prometheus.io/port: "8085"
-              prometheus.io/path: "/metrics"
+        
+        # ServiceMonitor configuration for template
+        serviceMonitor:
+          enabled: true
+          additionalLabels:
+            release: monitoring-staging
+          interval: 30s
+          scrapeTimeout: 10s
         
         # Bucket auto-creation for staging
         bucketInit:

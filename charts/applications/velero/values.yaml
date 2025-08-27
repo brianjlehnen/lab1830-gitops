@@ -21,6 +21,9 @@ velero:
   
   # Configuration (updated format)
   configuration:
+    # Enable metrics for Prometheus scraping
+    metricsAddress: "0.0.0.0:8085"
+    
     # Backup storage location configuration
     backupStorageLocation:
       - name: nfs-backup
@@ -71,7 +74,7 @@ velero:
   schedules:
     daily-cluster:
       disabled: false
-      schedule: "0 1 * * *"
+      schedule: "0 1 * * *"  # Fixed cron format
       useOwnerReferencesInBackup: false
       template:
         includedNamespaces: ["*"]
@@ -116,3 +119,10 @@ bucketInit:
   credentials:
     accessKeyId: "velero"
     secretAccessKey: "velero123"
+
+# ServiceMonitor configuration for Prometheus monitoring
+serviceMonitor:
+  enabled: false  # Default disabled, enabled per environment
+  additionalLabels: {}
+  interval: 30s
+  scrapeTimeout: 10s
