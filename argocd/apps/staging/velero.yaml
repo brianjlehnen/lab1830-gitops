@@ -15,15 +15,17 @@ spec:
       values: |
         # Top-level bucket name override
         bucketName: velero-backups-staging
-
+        
         # Staging-specific values
         nfsGateway:
           nfs:
             server: "192.168.4.159"
             path: "/volume1/Backups/velero"
-
+        
         velero:
           configuration:
+            # Enable metrics for Prometheus scraping
+            metricsAddress: "0.0.0.0:8085"
             backupStorageLocation:
               - name: nfs-backup
                 provider: aws
@@ -33,12 +35,29 @@ spec:
                   s3ForcePathStyle: "true"
                   s3Url: "http://nfs-gateway.velero.svc.cluster.local:9000"
                 accessMode: ReadWrite
+          
           schedules:
             daily-cluster:
-              schedule: "0 2 * * *"  # 2 AM for staging
+              schedule: "0 2 * * *"  # 2 AM for staging (fixed cron format)
               template:
                 ttl: "72h"  # 3 days retention for staging
-
+          
+          # ServiceMonitor for staging Prometheus Operator
+          serviceMonitor:
+            enabled: true
+            additionalLabels:
+              release: monitoring-staging  # Use staging Prometheus
+            namespace: velero
+            interval: 30s
+            scrapeTimeout: 10s
+          
+          # Ensure service exposes metrics port
+          service:
+            annotations:
+              prometheus.io/scrape: "true"
+              prometheus.io/port: "8085"
+              prometheus.io/path: "/metrics"
+        
         # Bucket auto-creation for staging
         bucketInit:
           enabled: true
@@ -48,9 +67,11 @@ spec:
           credentials:
             accessKeyId: "velero"
             secretAccessKey: "velero123"
+  
   destination:
     server: https://kubernetes.default.svc
     namespace: velero
+  
   syncPolicy:
     automated:
       prune: false
