@@ -21,6 +21,7 @@ spec:
               hosts:
                 - grafana-staging.lab1830.com
               annotations:
+                cert-manager.io/cluster-issuer: "selfsigned-clusterissuer-staging"
                 nginx.ingress.kubernetes.io/ssl-redirect: "true"
                 nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
               tls:
