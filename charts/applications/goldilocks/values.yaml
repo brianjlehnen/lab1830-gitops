@@ -10,15 +10,14 @@ goldilocks:
         cert-manager.io/cluster-issuer: letsencrypt-production
         nginx.ingress.kubernetes.io/ssl-redirect: "true"
       hosts:
-      - host: goldilocks.lab1830.com
-        paths:
-        - path: /
-          pathType: Prefix
+        - host: goldilocks.lab1830.com
+          paths:
+            - path: /
+              type: Prefix  # Changed from pathType to type
       tls:
-      - secretName: goldilocks-tls
-        hosts:
-        - goldilocks.lab1830.com
-    
+        - secretName: goldilocks-tls
+          hosts:
+            - goldilocks.lab1830.com
     resources:
       requests:
         cpu: 25m
@@ -26,7 +25,6 @@ goldilocks:
       limits:
         cpu: 100m
         memory: 64Mi
-
   # Controller manages VPA objects
   controller:
     enabled: true
@@ -37,13 +35,12 @@ goldilocks:
       limits:
         cpu: 100m
         memory: 64Mi
-
   # VPA (Vertical Pod Autoscaler) - required for recommendations
   vpa:
     enabled: true
     # Create VPA CRDs
     updater:
-      enabled: false  # We only want recommendations, not automatic updates
+      enabled: false # We only want recommendations, not automatic updates
     recommender:
       enabled: true
       resources:
@@ -54,8 +51,7 @@ goldilocks:
           cpu: 200m
           memory: 200Mi
     admissionController:
-      enabled: false  # Disable automatic pod mutations
-
+      enabled: false # Disable automatic pod mutations
   # Install metrics-server if not present (you already have it)
   metrics-server:
     enabled: false
