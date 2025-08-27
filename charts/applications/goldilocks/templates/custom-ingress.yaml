@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: goldilocks-staging-dashboard-custom
+  namespace: goldilocks
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - goldilocks-staging.lab1830.com
+      secretName: goldilocks-staging-tls-custom
+  rules:
+    - host: goldilocks-staging.lab1830.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: goldilocks-staging-dashboard
+                port:
+                  name: http
