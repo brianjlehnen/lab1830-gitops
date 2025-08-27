@@ -36,6 +36,7 @@ spec:
               schedule: "0 1 * * 0"  # Weekly on Sunday at 1 AM
               template:
                 ttl: "720h"  # 30 days retention
+          
           resources:
             requests:
               cpu: "100m"
@@ -43,6 +44,18 @@ spec:
             limits:
               cpu: "500m"
               memory: "512Mi"
+          
+          # Enable metrics for Prometheus scraping
+          configuration:
+            metricsAddress: "0.0.0.0:8085"
+        
+        # ServiceMonitor configuration for template
+        serviceMonitor:
+          enabled: true
+          additionalLabels:
+            release: monitoring-production
+          interval: 30s
+          scrapeTimeout: 10s
         
         # Bucket auto-creation for production
         bucketInit:
@@ -63,10 +76,11 @@ spec:
             limits:
               cpu: "200m"
               memory: "256Mi"
-
+  
   destination:
     server: https://kubernetes.default.svc
     namespace: velero
+  
   syncPolicy:
     automated:
       prune: false
