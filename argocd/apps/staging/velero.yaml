@@ -20,7 +20,7 @@ spec:
         nfsGateway:
           nfs:
             server: "192.168.4.159"
-            path: "/volume1/Backups/velero"
+            path: "/volume1/Backups/staging"
         
         velero:
           configuration:
