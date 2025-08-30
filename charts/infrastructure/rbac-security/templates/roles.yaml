@@ -1,0 +1,14 @@
+# charts/infrastructure/rbac-security/templates/roles.yaml
+{{- range $key, $value := .Values.roles }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: {{ $value.namespace }}
+  name: {{ $key }}
+  labels:
+    app.kubernetes.io/name: rbac-security
+    app.kubernetes.io/component: security
+rules:
+{{- toYaml $value.rules | nindent 0 }}
+{{- end }}

@@ -1,0 +1,50 @@
+# argocd/apps/staging/pod-security.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pod-security-staging
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: pod-security
+    app.kubernetes.io/component: security
+    environment: staging
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    path: charts/infrastructure/pod-security
+    targetRevision: staging
+    helm:
+      valueFiles: [values.yaml]
+      values: |
+        # Staging-specific configuration (more lenient)
+        defaultEnforcementLevel: baseline
+        
+        # Only apply to staging namespaces
+        namespaces:
+          infrastructure:
+            - name: monitoring-staging
+              enforce: baseline
+              audit: baseline
+              warn: baseline
+            - name: vault-staging
+              enforce: baseline
+              audit: baseline
+              warn: baseline
+          applications:
+            - name: applications-staging
+              enforce: baseline
+              audit: restricted
+              warn: restricted
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: security
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

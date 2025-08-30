@@ -1,0 +1,17 @@
+# charts/infrastructure/network-security/Chart.yaml
+apiVersion: v2
+name: network-security
+description: Advanced Network Security Policies for homelab microsegmentation
+type: application
+version: 1.0.0
+appVersion: "1.0"
+keywords:
+  - security
+  - network-policies
+  - microsegmentation
+home: https://github.com/brianjlehnen/homelab-gitops
+sources:
+  - https://github.com/brianjlehmen/homelab-gitops
+maintainers:
+  - name: brian
+    email: brian@lab1830.com

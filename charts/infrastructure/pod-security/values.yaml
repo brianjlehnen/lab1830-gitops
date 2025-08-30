@@ -1,0 +1,48 @@
+# Pod Security Standards configuration
+
+# Default enforcement level
+defaultEnforcementLevel: baseline
+
+# Namespace configurations
+namespaces:
+  # Infrastructure namespaces (baseline policy)
+  infrastructure:
+    - name: monitoring-production
+      enforce: baseline
+      audit: restricted
+      warn: restricted
+    - name: vault
+      enforce: baseline
+      audit: restricted
+      warn: restricted
+    - name: network
+      enforce: baseline
+      audit: restricted
+      warn: restricted
+    - name: velero
+      enforce: baseline
+      audit: restricted
+      warn: restricted
+    - name: argocd
+      enforce: baseline
+      audit: restricted
+      warn: restricted
+  
+  # Application namespaces (restricted policy)
+  applications:
+    - name: applications
+      enforce: restricted
+      audit: restricted
+      warn: restricted
+    - name: security
+      enforce: restricted
+      audit: restricted
+      warn: restricted
+  
+  # System namespaces remain privileged (no changes)
+  # kube-system, kube-public, kube-node-lease
+
+# Global labels for all namespaces
+commonLabels:
+  managed-by: argocd
+  security-policy: enabled

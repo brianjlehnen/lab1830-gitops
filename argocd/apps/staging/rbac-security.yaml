@@ -1,0 +1,47 @@
+# argocd/apps/staging/rbac-security.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rbac-security-staging
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: rbac-security
+    app.kubernetes.io/component: security
+    environment: staging
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehmen/homelab-gitops.git
+    path: charts/infrastructure/rbac-security
+    targetRevision: staging
+    helm:
+      valueFiles: [values.yaml]
+      values: |
+        # Staging-specific RBAC (more permissive for testing)
+        serviceAccounts:
+          - name: monitoring-reader-staging
+            namespace: monitoring-staging
+          - name: vault-auth-staging
+            namespace: vault-staging
+        
+        clusterRoleBindings:
+          - name: monitoring-reader-staging-binding
+            clusterRole: monitoring-reader
+            serviceAccount: monitoring-reader-staging
+            namespace: monitoring-staging
+          - name: vault-auth-staging-binding
+            clusterRole: vault-auth
+            serviceAccount: vault-auth-staging
+            namespace: vault-staging
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: security
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

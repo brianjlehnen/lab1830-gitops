@@ -1,0 +1,19 @@
+# charts/infrastructure/rbac-security/templates/cluster-role-bindings.yaml
+{{- range .Values.clusterRoleBindings }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .name }}
+  labels:
+    app.kubernetes.io/name: rbac-security
+    app.kubernetes.io/component: security
+subjects:
+- kind: ServiceAccount
+  name: {{ .serviceAccount }}
+  namespace: {{ .namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ .clusterRole }}
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

@@ -1,0 +1,13 @@
+# charts/infrastructure/rbac-security/templates/cluster-roles.yaml
+{{- range $key, $value := .Values.clusterRoles }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ $value.name }}
+  labels:
+    app.kubernetes.io/name: rbac-security
+    app.kubernetes.io/component: security
+rules:
+{{- toYaml $value.rules | nindent 0 }}
+{{- end }}

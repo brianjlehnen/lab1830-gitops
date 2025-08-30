@@ -1,0 +1,93 @@
+# charts/infrastructure/rbac-security/values.yaml
+# RBAC Security Configuration
+
+# Service Accounts
+serviceAccounts:
+  - name: monitoring-reader
+    namespace: monitoring-production
+  - name: vault-auth
+    namespace: vault
+  - name: backup-operator
+    namespace: velero
+  - name: security-manager
+    namespace: security
+
+# ClusterRoles
+clusterRoles:
+  monitoringReader:
+    name: monitoring-reader
+    rules:
+      - apiGroups: [""]
+        resources: ["pods", "services", "endpoints", "persistentvolumeclaims", "events", "configmaps", "secrets", "nodes", "nodes/proxy", "nodes/metrics"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: ["extensions", "apps"]
+        resources: ["deployments", "daemonsets", "replicasets", "statefulsets"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: ["monitoring.coreos.com"]
+        resources: ["*"]
+        verbs: ["get", "list", "watch"]
+      - nonResourceURLs: ["/metrics", "/metrics/*"]
+        verbs: ["get"]
+
+  vaultAuth:
+    name: vault-auth
+    rules:
+      - apiGroups: [""]
+        resources: ["serviceaccounts", "serviceaccounts/token"]
+        verbs: ["create", "get", "update", "delete"]
+      - apiGroups: [""]
+        resources: ["configmaps"]
+        verbs: ["get", "list", "watch"]
+
+  backupOperator:
+    name: velero-backup-operator
+    rules:
+      - apiGroups: ["*"]
+        resources: ["*"]
+        verbs: ["*"]
+      - nonResourceURLs: ["*"]
+        verbs: ["*"]
+
+  networkSecurityManager:
+    name: network-security-manager
+    rules:
+      - apiGroups: ["networking.k8s.io"]
+        resources: ["networkpolicies"]
+        verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+      - apiGroups: [""]
+        resources: ["namespaces", "pods"]
+        verbs: ["get", "list", "watch"]
+
+# Roles (namespace-specific)
+roles:
+  developer:
+    namespace: applications
+    rules:
+      - apiGroups: [""]
+        resources: ["pods", "services", "configmaps", "persistentvolumeclaims"]
+        verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+      - apiGroups: ["apps"]
+        resources: ["deployments", "replicasets"]
+        verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+      - apiGroups: [""]
+        resources: ["secrets"]
+        verbs: ["get", "list", "watch"]
+
+# ClusterRoleBindings
+clusterRoleBindings:
+  - name: monitoring-reader-binding
+    clusterRole: monitoring-reader
+    serviceAccount: monitoring-reader
+    namespace: monitoring-production
+  - name: vault-auth-binding
+    clusterRole: vault-auth
+    serviceAccount: vault-auth
+    namespace: vault
+  - name: backup-operator-binding
+    clusterRole: velero-backup-operator
+    serviceAccount: backup-operator
+    namespace: velero
+  - name: network-security-manager-binding
+    clusterRole: network-security-manager
+    serviceAccount: security-manager
+    namespace: security

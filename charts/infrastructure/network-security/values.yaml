@@ -1,0 +1,212 @@
+# charts/infrastructure/network-security/values.yaml
+# Network Security Configuration
+
+# Global network settings
+global:
+  # NFS server IP
+  nfsServer: "192.168.4.159"
+  # Loki aggregation endpoint
+  lokiEndpoint: "192.168.4.250"
+  lokiPort: 31000
+  # Cluster network
+  clusterCIDR: "192.168.4.0/22"
+
+# Network policies per namespace
+networkPolicies:
+  vault:
+    namespace: vault
+    enabled: true
+    policies:
+      - name: vault-security-policy
+        podSelector: {}
+        ingress:
+          # Allow NGINX Ingress Controller
+          - from:
+            - namespaceSelector:
+                matchLabels:
+                  name: ingress-nginx
+            ports:
+            - protocol: TCP
+              port: 8200
+          # Allow inter-vault communication for HA
+          - from:
+            - podSelector:
+                matchLabels:
+                  app.kubernetes.io/name: vault
+            ports:
+            - protocol: TCP
+              port: 8201
+        egress:
+          # DNS resolution
+          - to: []
+            ports:
+            - protocol: UDP
+              port: 53
+            - protocol: TCP
+              port: 53
+          # NFS storage access
+          - to:
+            - ipBlock:
+                cidr: "{{ .Values.global.nfsServer }}/32"
+            ports:
+            - protocol: TCP
+              port: 2049
+          # Inter-vault HA communication
+          - to:
+            - podSelector:
+                matchLabels:
+                  app.kubernetes.io/name: vault
+            ports:
+            - protocol: TCP
+              port: 8201
+
+  monitoring:
+    namespace: monitoring-production
+    enabled: true
+    policies:
+      - name: monitoring-security-policy
+        podSelector: {}
+        ingress:
+          # Allow NGINX Ingress
+          - from:
+            - namespaceSelector:
+                matchLabels:
+                  name: ingress-nginx
+            ports:
+            - protocol: TCP
+              port: 3000  # Grafana
+          # Allow Prometheus to scrape all namespaces
+          - from: []
+            ports:
+            - protocol: TCP
+              port: 9090  # Prometheus
+            - protocol: TCP
+              port: 9093  # AlertManager
+        egress:
+          # DNS resolution
+          - to: []
+            ports:
+            - protocol: UDP
+              port: 53
+            - protocol: TCP
+              port: 53
+          # Scrape metrics from all namespaces
+          - to: []
+            ports:
+            - protocol: TCP
+              port: 8080
+            - protocol: TCP
+              port: 9090
+            - protocol: TCP
+              port: 3000
+          # NFS storage access
+          - to:
+            - ipBlock:
+                cidr: "{{ .Values.global.nfsServer }}/32"
+            ports:
+            - protocol: TCP
+              port: 2049
+          # Loki log aggregation
+          - to:
+            - ipBlock:
+                cidr: "{{ .Values.global.lokiEndpoint }}/32"
+            ports:
+            - protocol: TCP
+              port: "{{ .Values.global.lokiPort }}"
+
+  network:
+    namespace: network
+    enabled: true
+    policies:
+      - name: dns-security-policy
+        podSelector:
+          matchLabels:
+            app: adguard-home
+        ingress:
+          # Allow DNS queries from anywhere
+          - from: []
+            ports:
+            - protocol: UDP
+              port: 53
+            - protocol: TCP
+              port: 53
+          # Allow web interface via ingress
+          - from:
+            - namespaceSelector:
+                matchLabels:
+                  name: ingress-nginx
+            ports:
+            - protocol: TCP
+              port: 3000
+        egress:
+          # Allow upstream DNS queries (Cloudflare, Quad9)
+          - to: []
+            ports:
+            - protocol: UDP
+              port: 53
+            - protocol: TCP
+              port: 53
+            - protocol: TCP
+              port: 443  # DNS-over-HTTPS
+          # NFS storage access
+          - to:
+            - ipBlock:
+                cidr: "{{ .Values.global.nfsServer }}/32"
+            ports:
+            - protocol: TCP
+              port: 2049
+
+  argocd:
+    namespace: argocd
+    enabled: true
+    policies:
+      - name: argocd-security-policy
+        podSelector: {}
+        ingress:
+          # Allow NGINX Ingress
+          - from:
+            - namespaceSelector:
+                matchLabels:
+                  name: ingress-nginx
+            ports:
+            - protocol: TCP
+              port: 8080
+        egress:
+          # DNS resolution
+          - to: []
+            ports:
+            - protocol: UDP
+              port: 53
+            - protocol: TCP
+              port: 53
+          # Git repository access
+          - to: []
+            ports:
+            - protocol: TCP
+              port: 443
+            - protocol: TCP
+              port: 22
+          # Kubernetes API access
+          - to:
+            - ipBlock:
+                cidr: "{{ .Values.global.clusterCIDR }}"
+            ports:
+            - protocol: TCP
+              port: 6443
+          # NFS storage access
+          - to:
+            - ipBlock:
+                cidr: "{{ .Values.global.nfsServer }}/32"
+            ports:
+            - protocol: TCP
+              port: 2049
+
+  applications:
+    namespace: applications
+    enabled: true
+    policies:
+      - name: default-deny-all
+        podSelector: {}
+        policyTypes:
+        - Ingress
+        - Egress

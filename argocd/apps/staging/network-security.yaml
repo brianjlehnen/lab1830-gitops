@@ -1,0 +1,50 @@
+# argocd/apps/staging/network-security.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: network-security-staging
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: network-security
+    app.kubernetes.io/component: security
+    environment: staging
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehmen/homelab-gitops.git
+    path: charts/infrastructure/network-security
+    targetRevision: staging
+    helm:
+      valueFiles: [values.yaml]
+      values: |
+        # Staging-specific network configuration
+        global:
+          nfsServer: "192.168.5.159"  # Staging NFS if different
+          lokiEndpoint: "127.0.0.1"   # Local Loki or disabled
+          lokiPort: 3100
+          clusterCIDR: "192.168.5.0/24"  # Staging network CIDR
+        
+        # More permissive network policies for staging testing
+        networkPolicies:
+          vault:
+            enabled: false  # Start disabled, enable gradually
+          monitoring:
+            enabled: true   # Enable monitoring policies
+          network:
+            enabled: true   # DNS policies needed
+          argocd:
+            enabled: true   # GitOps policies needed
+          applications:
+            enabled: false  # Start permissive for app testing
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: security
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

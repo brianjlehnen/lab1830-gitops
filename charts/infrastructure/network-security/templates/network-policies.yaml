@@ -1,0 +1,91 @@
+# charts/infrastructure/network-security/templates/network-policies.yaml
+{{- range $nsKey, $nsValue := .Values.networkPolicies }}
+{{- if $nsValue.enabled }}
+{{- range $nsValue.policies }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .name }}
+  namespace: {{ $nsValue.namespace }}
+  labels:
+    app.kubernetes.io/name: network-security
+    app.kubernetes.io/component: security
+spec:
+  podSelector:
+    {{- toYaml .podSelector | nindent 4 }}
+  policyTypes:
+  {{- if .ingress }}
+  - Ingress
+  {{- end }}
+  {{- if .egress }}
+  - Egress
+  {{- end }}
+  {{- if .policyTypes }}
+  {{- toYaml .policyTypes | nindent 2 }}
+  {{- end }}
+  {{- if .ingress }}
+  ingress:
+  {{- range .ingress }}
+  - {{- if .from }}
+    from:
+    {{- range .from }}
+    {{- if .namespaceSelector }}
+    - namespaceSelector:
+        {{- toYaml .namespaceSelector | nindent 8 }}
+    {{- end }}
+    {{- if .podSelector }}
+    - podSelector:
+        {{- toYaml .podSelector | nindent 8 }}
+    {{- end }}
+    {{- if .ipBlock }}
+    - ipBlock:
+        cidr: {{ tpl .ipBlock.cidr $ }}
+    {{- end }}
+    {{- if eq . "[]" }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- if .ports }}
+    ports:
+    {{- range .ports }}
+    - protocol: {{ .protocol }}
+      port: {{ if eq (.port | toString) ($.Values.global.lokiPort | toString) }}{{ tpl (.port | toString) $ }}{{ else }}{{ .port }}{{ end }}
+    {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- if .egress }}
+  egress:
+  {{- range .egress }}
+  - {{- if .to }}
+    to:
+    {{- range .to }}
+    {{- if .namespaceSelector }}
+    - namespaceSelector:
+        {{- toYaml .namespaceSelector | nindent 8 }}
+    {{- end }}
+    {{- if .podSelector }}
+    - podSelector:
+        {{- toYaml .podSelector | nindent 8 }}
+    {{- end }}
+    {{- if .ipBlock }}
+    - ipBlock:
+        cidr: {{ tpl .ipBlock.cidr $ }}
+    {{- end }}
+    {{- if eq . "[]" }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- if .ports }}
+    ports:
+    {{- range .ports }}
+    - protocol: {{ .protocol }}
+      port: {{ if eq (.port | toString) ($.Values.global.lokiPort | toString) }}{{ tpl (.port | toString) $ }}{{ else }}{{ .port }}{{ end }}
+    {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
