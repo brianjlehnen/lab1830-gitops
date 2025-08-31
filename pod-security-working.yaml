@@ -1,0 +1,253 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  annotations:
+    argocd.argoproj.io/tracking-id: staging-bootstrap:argoproj.io/Application:argocd/pod-security-staging
+  creationTimestamp: "2025-08-30T20:30:39Z"
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  generation: 104
+  labels:
+    app.kubernetes.io/component: security
+    app.kubernetes.io/name: pod-security
+    environment: staging
+  name: pod-security-staging
+  namespace: argocd
+  resourceVersion: "1357632"
+  uid: 0a71ea12-6f1c-4274-87cc-36a88c1a422a
+spec:
+  destination:
+    namespace: security
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    helm:
+      valueFiles:
+      - values.yaml
+      values: |
+        # Staging-specific configuration (more lenient)
+        defaultEnforcementLevel: baseline
+
+        # Only apply to staging namespaces
+        namespaces:
+          infrastructure:
+            - name: monitoring-staging
+              enforce: baseline
+              audit: baseline
+              warn: baseline
+            - name: vault-staging
+              enforce: baseline
+              audit: baseline
+              warn: baseline
+          applications:
+            - name: applications-staging
+              enforce: baseline
+              audit: restricted
+              warn: restricted
+    path: charts/infrastructure/pod-security
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    targetRevision: staging
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+    - CreateNamespace=true
+    - ServerSideApply=true
+status:
+  controllerNamespace: argocd
+  health:
+    lastTransitionTime: "2025-08-30T20:30:39Z"
+    status: Healthy
+  history:
+  - deployStartedAt: "2025-08-30T20:30:39Z"
+    deployedAt: "2025-08-30T20:30:39Z"
+    id: 0
+    initiatedBy:
+      automated: true
+    revision: ad994d8a1ddb6fd1859fea315c8817da2b1a68ce
+    source:
+      helm:
+        valueFiles:
+        - values.yaml
+        values: |
+          # Staging-specific configuration (more lenient)
+          defaultEnforcementLevel: baseline
+
+          # Only apply to staging namespaces
+          namespaces:
+            infrastructure:
+              - name: monitoring-staging
+                enforce: baseline
+                audit: baseline
+                warn: baseline
+              - name: vault-staging
+                enforce: baseline
+                audit: baseline
+                warn: baseline
+            applications:
+              - name: applications-staging
+                enforce: baseline
+                audit: restricted
+                warn: restricted
+      path: charts/infrastructure/pod-security
+      repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+      targetRevision: staging
+  - deployStartedAt: "2025-08-31T01:02:36Z"
+    deployedAt: "2025-08-31T01:02:36Z"
+    id: 1
+    initiatedBy:
+      username: admin
+    revision: ad994d8a1ddb6fd1859fea315c8817da2b1a68ce
+    source:
+      helm:
+        valueFiles:
+        - values.yaml
+        values: |
+          # Staging-specific configuration (more lenient)
+          defaultEnforcementLevel: baseline
+
+          # Only apply to staging namespaces
+          namespaces:
+            infrastructure:
+              - name: monitoring-staging
+                enforce: baseline
+                audit: baseline
+                warn: baseline
+              - name: vault-staging
+                enforce: baseline
+                audit: baseline
+                warn: baseline
+            applications:
+              - name: applications-staging
+                enforce: baseline
+                audit: restricted
+                warn: restricted
+      path: charts/infrastructure/pod-security
+      repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+      targetRevision: staging
+  operationState:
+    finishedAt: "2025-08-31T01:02:36Z"
+    message: successfully synced (all tasks run)
+    operation:
+      initiatedBy:
+        username: admin
+      retry: {}
+      sync:
+        revision: ad994d8a1ddb6fd1859fea315c8817da2b1a68ce
+        syncOptions:
+        - CreateNamespace=true
+        - ServerSideApply=true
+        syncStrategy:
+          hook: {}
+    phase: Succeeded
+    startedAt: "2025-08-31T01:02:36Z"
+    syncResult:
+      resources:
+      - group: ""
+        hookPhase: Running
+        kind: Namespace
+        message: namespace/vault-staging serverside-applied
+        name: vault-staging
+        namespace: security
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: ""
+        hookPhase: Running
+        kind: Namespace
+        message: namespace/applications-staging serverside-applied
+        name: applications-staging
+        namespace: security
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: ""
+        hookPhase: Running
+        kind: Namespace
+        message: namespace/monitoring-staging serverside-applied
+        name: monitoring-staging
+        namespace: security
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      revision: ad994d8a1ddb6fd1859fea315c8817da2b1a68ce
+      source:
+        helm:
+          valueFiles:
+          - values.yaml
+          values: |
+            # Staging-specific configuration (more lenient)
+            defaultEnforcementLevel: baseline
+
+            # Only apply to staging namespaces
+            namespaces:
+              infrastructure:
+                - name: monitoring-staging
+                  enforce: baseline
+                  audit: baseline
+                  warn: baseline
+                - name: vault-staging
+                  enforce: baseline
+                  audit: baseline
+                  warn: baseline
+              applications:
+                - name: applications-staging
+                  enforce: baseline
+                  audit: restricted
+                  warn: restricted
+        path: charts/infrastructure/pod-security
+        repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+        targetRevision: staging
+  reconciledAt: "2025-08-31T01:10:10Z"
+  resourceHealthSource: appTree
+  resources:
+  - kind: Namespace
+    name: applications-staging
+    status: Synced
+    version: v1
+  - kind: Namespace
+    name: monitoring-staging
+    status: Synced
+    version: v1
+  - kind: Namespace
+    name: vault-staging
+    status: Synced
+    version: v1
+  sourceHydrator: {}
+  sourceType: Helm
+  summary: {}
+  sync:
+    comparedTo:
+      destination:
+        namespace: security
+        server: https://kubernetes.default.svc
+      source:
+        helm:
+          valueFiles:
+          - values.yaml
+          values: |
+            # Staging-specific configuration (more lenient)
+            defaultEnforcementLevel: baseline
+
+            # Only apply to staging namespaces
+            namespaces:
+              infrastructure:
+                - name: monitoring-staging
+                  enforce: baseline
+                  audit: baseline
+                  warn: baseline
+                - name: vault-staging
+                  enforce: baseline
+                  audit: baseline
+                  warn: baseline
+              applications:
+                - name: applications-staging
+                  enforce: baseline
+                  audit: restricted
+                  warn: restricted
+        path: charts/infrastructure/pod-security
+        repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+        targetRevision: staging
+    revision: ad994d8a1ddb6fd1859fea315c8817da2b1a68ce
+    status: Synced

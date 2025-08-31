@@ -13,7 +13,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: git@github.com:brianjlehmen/homelab-gitops.git
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
     path: charts/infrastructure/network-security
     targetRevision: staging
     helm:
@@ -21,23 +21,23 @@ spec:
       values: |
         # Staging-specific network configuration
         global:
-          nfsServer: "192.168.5.159"  # Staging NFS if different
-          lokiEndpoint: "127.0.0.1"   # Local Loki or disabled
+          nfsServer: "192.168.5.159"
+          lokiEndpoint: "127.0.0.1"
           lokiPort: 3100
-          clusterCIDR: "192.168.5.0/24"  # Staging network CIDR
+          clusterCIDR: "192.168.5.0/24"
         
         # More permissive network policies for staging testing
         networkPolicies:
           vault:
-            enabled: false  # Start disabled, enable gradually
+            enabled: false
           monitoring:
-            enabled: true   # Enable monitoring policies
+            enabled: true
           network:
-            enabled: true   # DNS policies needed
+            enabled: true
           argocd:
-            enabled: true   # GitOps policies needed
+            enabled: true
           applications:
-            enabled: false  # Start permissive for app testing
+            enabled: false
   destination:
     server: https://kubernetes.default.svc
     namespace: security

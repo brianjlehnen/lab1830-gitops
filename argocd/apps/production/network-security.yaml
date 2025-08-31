@@ -1,0 +1,50 @@
+# argocd/apps/production/network-security.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: network-security
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: network-security
+    app.kubernetes.io/component: security
+    environment: production
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    path: charts/infrastructure/network-security
+    targetRevision: main
+    helm:
+      valueFiles: [values.yaml]
+      values: |
+        # Production-specific network configuration
+        global:
+          nfsServer: "192.168.4.159"
+          lokiEndpoint: "192.168.4.250"
+          lokiPort: 31000
+          clusterCIDR: "192.168.4.0/22"
+        
+        # Enable all network policies for production
+        networkPolicies:
+          vault:
+            enabled: true
+          monitoring:
+            enabled: true
+          network:
+            enabled: true
+          argocd:
+            enabled: true
+          applications:
+            enabled: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: security
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

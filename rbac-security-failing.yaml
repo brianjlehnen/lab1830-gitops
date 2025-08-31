@@ -1,0 +1,96 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  annotations:
+    argocd.argoproj.io/tracking-id: staging-bootstrap:argoproj.io/Application:argocd/rbac-security-staging
+  creationTimestamp: "2025-08-30T20:30:39Z"
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  generation: 97
+  labels:
+    app.kubernetes.io/component: security
+    app.kubernetes.io/name: rbac-security
+    environment: staging
+  name: rbac-security-staging
+  namespace: argocd
+  resourceVersion: "1357843"
+  uid: 99a57c1e-4bb4-4c4f-9adf-f4110661fb84
+spec:
+  destination:
+    namespace: security
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    helm:
+      valueFiles:
+      - values.yaml
+      values: |
+        # Staging-specific RBAC (more permissive for testing)
+        serviceAccounts:
+          - name: monitoring-reader-staging
+            namespace: monitoring-staging
+          - name: vault-auth-staging
+            namespace: vault-staging
+
+        clusterRoleBindings:
+          - name: monitoring-reader-staging-binding
+            clusterRole: monitoring-reader
+            serviceAccount: monitoring-reader-staging
+            namespace: monitoring-staging
+          - name: vault-auth-staging-binding
+            clusterRole: vault-auth
+            serviceAccount: vault-auth-staging
+            namespace: vault-staging
+    path: charts/infrastructure/rbac-security
+    repoURL: git@github.com:brianjlehmen/homelab-gitops.git
+    targetRevision: staging
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+    - CreateNamespace=true
+    - ServerSideApply=true
+status:
+  conditions:
+  - lastTransitionTime: "2025-08-31T01:12:11Z"
+    message: 'Failed to load target state: failed to generate manifest for source
+      1 of 1: rpc error: code = Unknown desc = failed to list refs: error creating
+      SSH agent: "SSH agent requested but SSH_AUTH_SOCK not-specified"'
+    type: ComparisonError
+  controllerNamespace: argocd
+  health:
+    lastTransitionTime: "2025-08-30T20:30:39Z"
+    status: Healthy
+  reconciledAt: "2025-08-31T01:12:21Z"
+  resourceHealthSource: appTree
+  sync:
+    comparedTo:
+      destination:
+        namespace: security
+        server: https://kubernetes.default.svc
+      source:
+        helm:
+          valueFiles:
+          - values.yaml
+          values: |
+            # Staging-specific RBAC (more permissive for testing)
+            serviceAccounts:
+              - name: monitoring-reader-staging
+                namespace: monitoring-staging
+              - name: vault-auth-staging
+                namespace: vault-staging
+
+            clusterRoleBindings:
+              - name: monitoring-reader-staging-binding
+                clusterRole: monitoring-reader
+                serviceAccount: monitoring-reader-staging
+                namespace: monitoring-staging
+              - name: vault-auth-staging-binding
+                clusterRole: vault-auth
+                serviceAccount: vault-auth-staging
+                namespace: vault-staging
+        path: charts/infrastructure/rbac-security
+        repoURL: git@github.com:brianjlehmen/homelab-gitops.git
+        targetRevision: staging
+    status: Unknown
