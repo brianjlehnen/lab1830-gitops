@@ -1,0 +1,30 @@
+# argocd/apps/production/pod-security.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pod-security
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: pod-security
+    app.kubernetes.io/component: security
+    environment: production
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    path: charts/infrastructure/pod-security
+    targetRevision: main
+    helm:
+      valueFiles: [values.yaml]
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: security
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

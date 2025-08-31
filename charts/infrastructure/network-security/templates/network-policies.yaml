@@ -1,4 +1,3 @@
-# charts/infrastructure/network-security/templates/network-policies.yaml
 {{- range $nsKey, $nsValue := .Values.networkPolicies }}
 {{- if $nsValue.enabled }}
 {{- range $nsValue.policies }}
@@ -40,17 +39,17 @@ spec:
     {{- end }}
     {{- if .ipBlock }}
     - ipBlock:
-        cidr: {{ tpl .ipBlock.cidr $ }}
-    {{- end }}
-    {{- if eq . "[]" }}
+        cidr: {{ .ipBlock.cidr | quote }}
     {{- end }}
     {{- end }}
+    {{- else }}
+    from: []
     {{- end }}
     {{- if .ports }}
     ports:
     {{- range .ports }}
     - protocol: {{ .protocol }}
-      port: {{ if eq (.port | toString) ($.Values.global.lokiPort | toString) }}{{ tpl (.port | toString) $ }}{{ else }}{{ .port }}{{ end }}
+      port: {{ .port }}
     {{- end }}
     {{- end }}
   {{- end }}
@@ -71,17 +70,17 @@ spec:
     {{- end }}
     {{- if .ipBlock }}
     - ipBlock:
-        cidr: {{ tpl .ipBlock.cidr $ }}
-    {{- end }}
-    {{- if eq . "[]" }}
+        cidr: {{ .ipBlock.cidr | quote }}
     {{- end }}
     {{- end }}
+    {{- else }}
+    to: []
     {{- end }}
     {{- if .ports }}
     ports:
     {{- range .ports }}
     - protocol: {{ .protocol }}
-      port: {{ if eq (.port | toString) ($.Values.global.lokiPort | toString) }}{{ tpl (.port | toString) $ }}{{ else }}{{ .port }}{{ end }}
+      port: {{ .port }}
     {{- end }}
     {{- end }}
   {{- end }}
