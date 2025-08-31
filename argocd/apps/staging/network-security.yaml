@@ -21,9 +21,9 @@ spec:
       values: |
         # Staging-specific network configuration
         global:
-          nfsServer: "192.168.5.159"
-          lokiEndpoint: "127.0.0.1"
-          lokiPort: 3100
+          nfsServer: "192.168.4.159"
+          lokiEndpoint: "192.168.4.250"
+          lokiPort: 31000
           clusterCIDR: "192.168.5.0/24"
         
         # More permissive network policies for staging testing
