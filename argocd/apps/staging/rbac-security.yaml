@@ -25,7 +25,22 @@ spec:
             namespace: monitoring-staging
           - name: vault-auth-staging
             namespace: vault-staging
-        
+
+        # Override roles to use staging namespace
+        roles:
+          developer:
+            namespace: applications-staging
+            rules:
+              - apiGroups: [""]
+                resources: ["pods", "services", "configmaps", "persistentvolumeclaims"]
+                verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+              - apiGroups: ["apps"]
+                resources: ["deployments", "replicasets"]
+                verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+              - apiGroups: [""]
+                resources: ["secrets"]
+                verbs: ["get", "list", "watch"]
+
         clusterRoleBindings:
           - name: monitoring-reader-staging-binding
             clusterRole: monitoring-reader
