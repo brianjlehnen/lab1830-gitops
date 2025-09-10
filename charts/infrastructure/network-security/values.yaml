@@ -1,5 +1,4 @@
 # Network Security Configuration
-
 # Global network settings
 global:
   nfsServer: "192.168.4.159"
@@ -64,6 +63,17 @@ networkPolicies:
             ports:
             - protocol: TCP
               port: 2049
+          - to:
+            - podSelector:
+                matchLabels:
+                  app.kubernetes.io/name: prometheus
+            ports:
+            - protocol: TCP
+              port: 9090
+          - to: []
+            ports:
+            - protocol: TCP
+              port: 31000
 
   applications:
     namespace: applications
