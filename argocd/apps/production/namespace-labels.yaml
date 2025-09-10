@@ -1,0 +1,24 @@
+# argocd/apps/production/namespace-labels.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: namespace-labels
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: namespace-labels
+    environment: production
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    path: charts/infrastructure/namespace-labels
+    targetRevision: main
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+      - ServerSideApply=true
