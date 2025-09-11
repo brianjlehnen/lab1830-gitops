@@ -1,4 +1,4 @@
-# Production Vault - Stage 1: HTTP (for initialization)
+# Production Vault - Stage 1: HTTP (for initialization) - CORRECTED
 vault:
   global:
     enabled: true
@@ -9,7 +9,7 @@ vault:
     replicas: 1
     image:
       repository: hashicorp/vault-k8s
-      tag: "1.4.0"  # Stable vault-k8s version (not 1.20.1)
+      tag: "1.4.0"
     resources:
       requests:
         memory: "64Mi"
@@ -21,7 +21,7 @@ vault:
   server:
     image:
       repository: hashicorp/vault
-      tag: "1.20.1"  # CVE-2025-6000 patched version
+      tag: "1.20.1"
     
     dev:
       enabled: false
@@ -35,9 +35,9 @@ vault:
         config: |
           ui = true
           listener "tcp" {
-            tls_disable = 1
-            address = "[::]:8200"
-            cluster_address = "[::]:8201"
+            tls_disable     = 1
+            address         = "0.0.0.0:8200"
+            cluster_address = "0.0.0.0:8201"
           }
           storage "raft" {
             path = "/vault/data"
