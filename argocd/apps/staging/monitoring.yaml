@@ -39,20 +39,6 @@ spec:
               limits:
                 cpu: 200m
                 memory: 256Mi
-            smtp:
-              enabled: true
-              host: "smtp.gmail.com:587"
-              skip_verify: false
-              from_name: "Lab1830 Grafana Staging Alerts"
-            extraSecretMounts:
-              - name: smtp-credentials
-                secretName: grafana-smtp-secret
-                defaultMode: 0440
-                mountPath: /etc/secrets/smtp
-                readOnly: true
-            env:
-              GF_SMTP_USER_FILE: "/etc/secrets/smtp/username"
-              GF_SMTP_PASSWORD_FILE: "/etc/secrets/smtp/password"
           prometheus:
             prometheusSpec:
               retention: 7d
