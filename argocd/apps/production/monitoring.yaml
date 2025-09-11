@@ -13,6 +13,8 @@ spec:
     path: charts/applications/monitoring
     helm:
       values: |
+        grafanaSmtp:
+          enabled: true
         kube-prometheus-stack:
           grafana:
             ingress:
@@ -30,7 +32,20 @@ spec:
             persistence:
               enabled: true
               size: 10Gi
-
+            smtp:
+              enabled: true
+              host: "smtp.gmail.com:587"
+              skip_verify: false
+              from_name: "Lab1830 Grafana Alerts"
+            extraSecretMounts:
+              - name: smtp-credentials
+                secretName: grafana-smtp-secret
+                defaultMode: 0440
+                mountPath: /etc/secrets/smtp
+                readOnly: true
+            env:
+              GF_SMTP_USER_FILE: "/etc/secrets/smtp/username"
+              GF_SMTP_PASSWORD_FILE: "/etc/secrets/smtp/password"
           prometheus:
             prometheusSpec:
               retention: 15d
@@ -48,7 +63,6 @@ spec:
                     resources:
                       requests:
                         storage: 50Gi
-
           alertmanager:
             alertmanagerSpec:
               resources:
@@ -65,7 +79,6 @@ spec:
                     resources:
                       requests:
                         storage: 10Gi
-
           kubeStateMetrics:
             resources:
               requests:
@@ -74,7 +87,6 @@ spec:
               limits:
                 cpu: 200m
                 memory: 256Mi
-
           nodeExporter:
             resources:
               requests:
