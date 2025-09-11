@@ -18,6 +18,15 @@ spec:
     targetRevision: main
     helm:
       valueFiles: [values.yaml]
+      values: |
+        # Production-specific configuration
+        defaultEnforcementLevel: baseline
+        namespaces:
+          infrastructure:
+            - name: monitoring-production
+              enforce: privileged
+              audit: baseline
+              warn: baseline
   destination:
     server: https://kubernetes.default.svc
     namespace: security
