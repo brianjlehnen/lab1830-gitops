@@ -1,5 +1,4 @@
 # Pod Security Standards configuration
-
 # Default enforcement level
 defaultEnforcementLevel: baseline
 
@@ -8,9 +7,9 @@ namespaces:
   # Infrastructure namespaces (baseline policy)
   infrastructure:
     - name: monitoring-production
-      enforce: baseline
-      audit: restricted
-      warn: restricted
+      enforce: privileged
+      audit: baseline
+      warn: baseline
     - name: vault
       enforce: baseline
       audit: restricted
@@ -27,7 +26,6 @@ namespaces:
       enforce: baseline
       audit: restricted
       warn: restricted
-  
   # Application namespaces (restricted policy)
   applications:
     - name: applications
@@ -38,9 +36,9 @@ namespaces:
       enforce: restricted
       audit: restricted
       warn: restricted
-  
-  # System namespaces remain privileged (no changes)
-  # kube-system, kube-public, kube-node-lease
+
+# System namespaces remain privileged (no changes)
+# kube-system, kube-public, kube-node-lease
 
 # Global labels for all namespaces
 commonLabels:
