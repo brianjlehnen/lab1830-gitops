@@ -1,4 +1,5 @@
 # Pod Security Standards configuration
+
 # Default enforcement level
 defaultEnforcementLevel: baseline
 
@@ -10,10 +11,6 @@ namespaces:
       enforce: privileged
       audit: baseline
       warn: baseline
-    - name: vault
-      enforce: baseline
-      audit: restricted
-      warn: restricted
     - name: network
       enforce: baseline
       audit: restricted
@@ -26,6 +23,7 @@ namespaces:
       enforce: baseline
       audit: restricted
       warn: restricted
+
   # Application namespaces (restricted policy)
   applications:
     - name: applications

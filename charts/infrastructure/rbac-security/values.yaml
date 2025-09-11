@@ -5,8 +5,6 @@
 serviceAccounts:
   - name: monitoring-reader
     namespace: monitoring-production
-  - name: vault-auth
-    namespace: vault
   - name: backup-operator
     namespace: velero
   - name: security-manager
@@ -28,16 +26,6 @@ clusterRoles:
         verbs: ["get", "list", "watch"]
       - nonResourceURLs: ["/metrics", "/metrics/*"]
         verbs: ["get"]
-
-  vaultAuth:
-    name: vault-auth
-    rules:
-      - apiGroups: [""]
-        resources: ["serviceaccounts", "serviceaccounts/token"]
-        verbs: ["create", "get", "update", "delete"]
-      - apiGroups: [""]
-        resources: ["configmaps"]
-        verbs: ["get", "list", "watch"]
 
   backupOperator:
     name: velero-backup-operator
@@ -63,31 +51,3 @@ roles:
   developer:
     namespace: applications
     rules:
-      - apiGroups: [""]
-        resources: ["pods", "services", "configmaps", "persistentvolumeclaims"]
-        verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-      - apiGroups: ["apps"]
-        resources: ["deployments", "replicasets"]
-        verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-      - apiGroups: [""]
-        resources: ["secrets"]
-        verbs: ["get", "list", "watch"]
-
-# ClusterRoleBindings
-clusterRoleBindings:
-  - name: monitoring-reader-binding
-    clusterRole: monitoring-reader
-    serviceAccount: monitoring-reader
-    namespace: monitoring-production
-  - name: vault-auth-binding
-    clusterRole: vault-auth
-    serviceAccount: vault-auth
-    namespace: vault
-  - name: backup-operator-binding
-    clusterRole: velero-backup-operator
-    serviceAccount: backup-operator
-    namespace: velero
-  - name: network-security-manager-binding
-    clusterRole: network-security-manager
-    serviceAccount: security-manager
-    namespace: security

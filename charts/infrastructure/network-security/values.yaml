@@ -1,4 +1,5 @@
 # Network Security Configuration
+
 # Global network settings
 global:
   nfsServer: "192.168.4.159"
@@ -8,41 +9,6 @@ global:
 
 # Network policies per namespace
 networkPolicies:
-  vault:
-    namespace: vault
-    enabled: true
-    policies:
-      - name: vault-security-policy
-        podSelector: {}
-        ingress:
-          - from:
-            - namespaceSelector:
-                matchLabels:
-                  name: ingress-nginx
-            ports:
-            - protocol: TCP
-              port: 8200
-          - from:
-            - namespaceSelector:
-                matchLabels:
-                  name: monitoring-production
-            ports:
-            - protocol: TCP
-              port: 8200
-        egress:
-          - to: []
-            ports:
-            - protocol: UDP
-              port: 53
-            - protocol: TCP
-              port: 53
-          - to:
-            - ipBlock:
-                cidr: "192.168.4.159/32"
-            ports:
-            - protocol: TCP
-              port: 2049
-
   monitoring:
     namespace: monitoring-production
     enabled: true
@@ -55,45 +21,38 @@ networkPolicies:
                 matchLabels:
                   name: ingress-nginx
             ports:
-            - protocol: TCP
-              port: 3000
+              - protocol: TCP
+                port: 3000
         egress:
           - to: []
             ports:
-            - protocol: UDP
-              port: 53
-            - protocol: TCP
-              port: 53
+              - protocol: UDP
+                port: 53
+              - protocol: TCP
+                port: 53
           - to:
             - ipBlock:
                 cidr: "192.168.4.159/32"
             ports:
-            - protocol: TCP
-              port: 2049
+              - protocol: TCP
+                port: 2049
           - to:
             - podSelector:
                 matchLabels:
                   app.kubernetes.io/name: prometheus
             ports:
-            - protocol: TCP
-              port: 9090
+              - protocol: TCP
+                port: 9090
           - to: []
             ports:
-            - protocol: TCP
-              port: 31000
+              - protocol: TCP
+                port: 31000
           - to: []
             ports:
-            - protocol: TCP
-              port: 443
-            - protocol: TCP
-              port: 80
-          - to:
-            - namespaceSelector:
-                matchLabels:
-                  name: vault
-            ports:
-            - protocol: TCP
-              port: 8200
+              - protocol: TCP
+                port: 443
+              - protocol: TCP
+                port: 80
 
   applications:
     namespace: applications
@@ -102,5 +61,5 @@ networkPolicies:
       - name: default-deny-all
         podSelector: {}
         policyTypes:
-        - Ingress
-        - Egress
+          - Ingress
+          - Egress
