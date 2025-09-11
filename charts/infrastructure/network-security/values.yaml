@@ -74,6 +74,12 @@ networkPolicies:
             ports:
             - protocol: TCP
               port: 31000
+          - to: []
+            ports:
+            - protocol: TCP
+              port: 443
+            - protocol: TCP
+              port: 80
 
   applications:
     namespace: applications
