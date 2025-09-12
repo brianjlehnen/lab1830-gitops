@@ -34,29 +34,27 @@ spec:
               size: 10Gi
             initChownData:
               enabled: false
-            smtp:
-              enabled: true
-              host: "smtp.gmail.com:587"
-              skip_verify: false
-              from_address: "grafana@lab1830.com"
-              from_name: "Lab1830 Grafana Alerts"
-            extraSecretMounts:
-              - name: smtp-credentials
-                secretName: grafana-smtp-secret
-                defaultMode: 0440
-                mountPath: /etc/secrets/smtp
-                readOnly: true
             env:
-              GF_SMTP_USER_FILE: "/etc/secrets/smtp/username"
-              GF_SMTP_PASSWORD_FILE: "/etc/secrets/smtp/password"
-              GF_SMTP_HOST_FILE: "/etc/secrets/smtp/host"
+              GF_SMTP_ENABLED: "true"
+              GF_SMTP_HOST: "smtp.gmail.com:587"
+              GF_SMTP_FROM_ADDRESS: "grafana@lab1830.com"
+              GF_SMTP_FROM_NAME: "Lab1830 Grafana Alerts"
+              GF_SMTP_SKIP_VERIFY: "false"
+              GF_SMTP_STARTTLS_POLICY: "MandatoryStartTLS"
+              GF_SMTP_USER:
+                valueFrom:
+                  secretKeyRef:
+                    name: grafana-smtp-secret
+                    key: GF_SMTP_USER
+              GF_SMTP_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: grafana-smtp-secret
+                    key: GF_SMTP_PASSWORD
             grafana.ini:
               server:
                 root_url: "https://grafana.lab1830.com"
                 domain: "lab1830.com"
-              smtp:
-                enabled: true
-                starttls_policy: "OpportunisticStartTLS"
               unified_alerting:
                 enabled: true
           prometheus:
