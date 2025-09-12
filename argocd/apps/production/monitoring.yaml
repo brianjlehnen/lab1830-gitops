@@ -57,9 +57,8 @@ spec:
               smtp:
                 enabled: true
                 starttls_policy: "OpportunisticStartTLS"
-              alerting:
+              unified_alerting:
                 enabled: true
-                execute_alerts: true
                 error_or_timeout: "alerting"
                 nodata_or_nullvalues: "no_data"
                 concurrent_render_limit: 5
