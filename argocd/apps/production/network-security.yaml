@@ -26,10 +26,8 @@ spec:
           lokiPort: 31000
           clusterCIDR: "192.168.4.0/22"
         
-        # Enable all network policies for production
+        # Enable network policies for production (vault removed)
         networkPolicies:
-          vault:
-            enabled: true
           monitoring:
             enabled: true
           network:
@@ -38,9 +36,11 @@ spec:
             enabled: true
           applications:
             enabled: true
+  
   destination:
     server: https://kubernetes.default.svc
     namespace: security
+  
   syncPolicy:
     automated:
       prune: false
