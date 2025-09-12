@@ -32,6 +32,8 @@ spec:
             persistence:
               enabled: true
               size: 10Gi
+            initChownData:
+              enabled: false
             smtp:
               enabled: true
               host: "smtp.gmail.com:587"
