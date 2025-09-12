@@ -19,84 +19,85 @@ spec:
       values: |
         # Staging-specific overrides
         vault:
-          enabled: false  # Disable Vault injection - using ESO instead
-          role: wiz-role
-          address: "https://vault-staging.lab1830.com"
+          enabled: false  # Vault removed from infrastructure
         
         wiz-kubernetes-integration:
           global:
             wizApiToken:
               secret:
                 create: false
-                name: wiz-api-token  # ESO will create this
-          
-          wiz-kubernetes-connector:
-            autoCreateConnector:
-              clusterFlavor: Kubernetes
-              connectorName: "lehnen-lab-staging-v2"  # Updated to new staging connector
-            wiz-broker:
-              enabled: true
-              resources:
-                requests:
-                  cpu: 50m
-                  memory: 100Mi
-                limits:
-                  cpu: 200m
-                  memory: 400Mi
-          
-          wiz-sensor:
-            enabled: true
-            imagePullSecret:
-              create: false
-              name: sensor-image-pull  # ESO will create this
-            sensorClusterName: "lehnen-lab-staging-v2"  # Updated to match connector
-            resources:
-              requests:
-                cpu: 50m
-                memory: 100Mi
-              limits:
-                cpu: 200m
-                memory: 500Mi
-            nodeSelector:
-              kubernetes.io/os: linux
-            tolerations:
-              - operator: Exists
-            securityContext:
-              privileged: false
-              allowPrivilegeEscalation: true
-              capabilities:
-                add:
-                  - SYS_ADMIN
-                  - SYS_RESOURCE
-                  - SYS_PTRACE
-                  - NET_ADMIN
-            # Prefer not to run on control plane in staging
-            affinity:
-              nodeAffinity:
-                preferredDuringSchedulingIgnoredDuringExecution:
+                name: wiz-api-token # Manual secret creation
+        
+        wiz-kubernetes-connector:
+          autoCreateConnector:
+            clusterFlavor: Kubernetes
+            connectorName: "lehnen-lab-staging-v2"
+        
+        wiz-broker:
+          enabled: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 100Mi
+            limits:
+              cpu: 200m
+              memory: 400Mi
+        
+        wiz-sensor:
+          enabled: true
+          imagePullSecret:
+            create: false
+            name: sensor-image-pull # Manual secret creation
+          sensorClusterName: "lehnen-lab-staging-v2"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 100Mi
+            limits:
+              cpu: 200m
+              memory: 500Mi
+          nodeSelector:
+            kubernetes.io/os: linux
+          tolerations:
+            - operator: Exists
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: true
+            capabilities:
+              add:
+                - SYS_ADMIN
+                - SYS_RESOURCE
+                - SYS_PTRACE
+                - NET_ADMIN
+          # Prefer not to run on control plane in staging
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
                 - weight: 100
                   preference:
                     matchExpressions:
-                    - key: kubernetes.io/hostname
-                      operator: NotIn
-                      values:
-                      - staging-control
-          
-          wiz-admission-controller:
-            enabled: true
-            resources:
-              requests:
-                cpu: 25m
-                memory: 50Mi
-              limits:
-                cpu: 100m
-                memory: 150Mi
-            webhook:
-              failurePolicy: Ignore  # Permissive in staging
-              timeoutSeconds: 10
+                      - key: kubernetes.io/hostname
+                        operator: NotIn
+                        values:
+                          - staging-control
+        
+        wiz-admission-controller:
+          enabled: true
+          resources:
+            requests:
+              cpu: 25m
+              memory: 50Mi
+            limits:
+              cpu: 100m
+              memory: 150Mi
+          webhook:
+            failurePolicy: Ignore # Permissive in staging
+            timeoutSeconds: 10
+  
   destination:
     server: https://kubernetes.default.svc
     namespace: wiz
+  
   syncPolicy:
     automated:
       prune: true
@@ -113,4 +114,5 @@ spec:
         duration: 5s
         factor: 2
         maxDuration: 3m
+  
   revisionHistoryLimit: 10
