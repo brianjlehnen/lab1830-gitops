@@ -22,6 +22,11 @@ spec:
           enabled: false  # Vault removed from infrastructure
         
         wiz-kubernetes-integration:
+          global:
+            wizApiToken:
+              secret:
+                create: false
+                name: wiz-api-token # Manual secret creation
         
         wiz-kubernetes-connector:
           autoCreateConnector:
