@@ -102,11 +102,6 @@ data:
             description: GitOps deployment controller
             icon: argo-cd
             
-        - Vault:
-            href: https://vault.lab1830.com
-            description: Enterprise secrets management
-            icon: vault
-            
         - Portainer:
             href: https://portainer.lab1830.com
             description: Docker container management

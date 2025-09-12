@@ -8,10 +8,9 @@ namespace:
   create: true
   name: wiz
 
-# Vault secret management
+# Vault secret management (disabled)
 vault:
-  enabled: true
-  role: wiz-role
+  enabled: false
 
 # Minimal subchart values - ArgoCD will override these
 wiz-kubernetes-integration:
@@ -20,17 +19,18 @@ wiz-kubernetes-integration:
       secret:
         create: false
         name: wiz-api-token
-  
-  wiz-kubernetes-connector:
-    enabled: true
-    wiz-broker:
-      enabled: true
-  
-  wiz-sensor:
-    enabled: true
-    imagePullSecret:
-      create: false
-      name: sensor-image-pull
-  
-  wiz-admission-controller:
-    enabled: true
+
+wiz-kubernetes-connector:
+  enabled: true
+
+wiz-broker:
+  enabled: true
+
+wiz-sensor:
+  enabled: true
+  imagePullSecret:
+    create: false
+    name: sensor-image-pull
+
+wiz-admission-controller:
+  enabled: true
