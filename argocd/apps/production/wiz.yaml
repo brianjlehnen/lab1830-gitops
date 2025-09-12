@@ -19,83 +19,85 @@ spec:
       values: |
         # Production-specific overrides
         vault:
-          enabled: true
-          role: wiz-role
-          address: "https://vault.lab1830.com"
+          enabled: false  # Vault removed from infrastructure
         
         wiz-kubernetes-integration:
-          wiz-kubernetes-connector:
-            autoCreateConnector:
-              clusterFlavor: Kubernetes
-              connectorName: "lehnen-lab-production"
-            wiz-broker:
-              enabled: true
-              resources:
-                requests:
-                  cpu: 100m
-                  memory: 200Mi
-                limits:
-                  cpu: 500m
-                  memory: 1Gi
-          
-          wiz-sensor:
-            sensorClusterName: "lehnen-wiz-sensor-production"
-            resources:
-              requests:
-                cpu: 100m
-                memory: 200Mi
-              limits:
-                cpu: 500m
-                memory: 1Gi
-            nodeSelector:
-              kubernetes.io/os: linux
-            tolerations:
-              - operator: Exists
-            securityContext:
-              privileged: false
-              allowPrivilegeEscalation: true
-              capabilities:
-                add:
-                  - SYS_ADMIN
-                  - SYS_RESOURCE
-                  - SYS_PTRACE
-                  - NET_ADMIN
-            # Prefer worker nodes but allow control plane
-            affinity:
-              nodeAffinity:
-                preferredDuringSchedulingIgnoredDuringExecution:
+        
+        wiz-kubernetes-connector:
+          autoCreateConnector:
+            clusterFlavor: Kubernetes
+            connectorName: "lehnen-lab-production"
+        
+        wiz-broker:
+          enabled: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 200Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+        
+        wiz-sensor:
+          sensorClusterName: "lehnen-wiz-sensor-production"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 200Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          nodeSelector:
+            kubernetes.io/os: linux
+          tolerations:
+            - operator: Exists
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: true
+            capabilities:
+              add:
+                - SYS_ADMIN
+                - SYS_RESOURCE
+                - SYS_PTRACE
+                - NET_ADMIN
+          # Prefer worker nodes but allow control plane
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
                 - weight: 100
                   preference:
                     matchExpressions:
-                    - key: kubernetes.io/hostname
-                      operator: In
-                      values:
-                      - k8s-node1
-                      - k8s-node2
+                      - key: kubernetes.io/hostname
+                        operator: In
+                        values:
+                          - k8s-node1
+                          - k8s-node2
                 - weight: 50
                   preference:
                     matchExpressions:
-                    - key: kubernetes.io/hostname
-                      operator: In
-                      values:
-                      - k8s-control
-            priorityClassName: "system-cluster-critical"
-          
-          wiz-admission-controller:
-            enabled: true
-            resources:
-              requests:
-                cpu: 50m
-                memory: 100Mi
-              limits:
-                cpu: 200m
-                memory: 300Mi
-            webhook:
-              failurePolicy: Fail  # Strict enforcement in production
-              timeoutSeconds: 30
+                      - key: kubernetes.io/hostname
+                        operator: In
+                        values:
+                          - k8s-control
+          priorityClassName: "system-cluster-critical"
+        
+        wiz-admission-controller:
+          enabled: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 100Mi
+            limits:
+              cpu: 200m
+              memory: 300Mi
+          webhook:
+            failurePolicy: Fail # Strict enforcement in production
+            timeoutSeconds: 30
+  
   destination:
     server: https://kubernetes.default.svc
     namespace: wiz
+  
   syncPolicy:
     automated:
       prune: true
@@ -112,4 +114,5 @@ spec:
         duration: 5s
         factor: 2
         maxDuration: 3m
+  
   revisionHistoryLimit: 10

@@ -26,11 +26,8 @@ spec:
           lokiPort: 31000
           clusterCIDR: "192.168.5.0/24"
         
-        # Complete override of network policies with staging namespaces
+        # Network policies for staging (vault removed)
         networkPolicies:
-          vault:
-            namespace: vault-staging
-            enabled: false
           monitoring:
             namespace: monitoring-staging
             enabled: true
@@ -43,15 +40,15 @@ spec:
                         matchLabels:
                           name: ingress-nginx
                     ports:
-                    - protocol: TCP
-                      port: 3000
+                      - protocol: TCP
+                        port: 3000
                 egress:
                   - to: []
                     ports:
-                    - protocol: UDP
-                      port: 53
-                    - protocol: TCP
-                      port: 53
+                      - protocol: UDP
+                        port: 53
+                      - protocol: TCP
+                        port: 53
           network:
             enabled: true
           argocd:
@@ -59,9 +56,11 @@ spec:
           applications:
             namespace: applications-staging
             enabled: false
+  
   destination:
     server: https://kubernetes.default.svc
     namespace: security
+  
   syncPolicy:
     automated:
       prune: false
