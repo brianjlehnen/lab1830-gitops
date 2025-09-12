@@ -41,16 +41,9 @@ spec:
               GF_SMTP_FROM_NAME: "Lab1830 Grafana Alerts"
               GF_SMTP_SKIP_VERIFY: "false"
               GF_SMTP_STARTTLS_POLICY: "MandatoryStartTLS"
-              GF_SMTP_USER:
-                valueFrom:
-                  secretKeyRef:
-                    name: grafana-smtp-secret
-                    key: GF_SMTP_USER
-              GF_SMTP_PASSWORD:
-                valueFrom:
-                  secretKeyRef:
-                    name: grafana-smtp-secret
-                    key: GF_SMTP_PASSWORD
+            envFrom:
+              - secretRef:
+                  name: grafana-smtp-secret
             grafana.ini:
               server:
                 root_url: "https://grafana.lab1830.com"
