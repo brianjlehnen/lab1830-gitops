@@ -36,6 +36,7 @@ spec:
               enabled: true
               host: "smtp.gmail.com:587"
               skip_verify: false
+              from_address: "grafana@lab1830.com"
               from_name: "Lab1830 Grafana Alerts"
             extraSecretMounts:
               - name: smtp-credentials
@@ -46,6 +47,23 @@ spec:
             env:
               GF_SMTP_USER_FILE: "/etc/secrets/smtp/username"
               GF_SMTP_PASSWORD_FILE: "/etc/secrets/smtp/password"
+              GF_SMTP_HOST_FILE: "/etc/secrets/smtp/host"
+            grafana.ini:
+              server:
+                root_url: "https://grafana.lab1830.com"
+                domain: "lab1830.com"
+              smtp:
+                enabled: true
+                starttls_policy: "OpportunisticStartTLS"
+              alerting:
+                enabled: true
+                execute_alerts: true
+                error_or_timeout: "alerting"
+                nodata_or_nullvalues: "no_data"
+                concurrent_render_limit: 5
+                evaluation_timeout_seconds: 30
+                notification_timeout_seconds: 30
+                max_attempts: 3
           prometheus:
             prometheusSpec:
               retention: 15d
