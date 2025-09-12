@@ -1,5 +1,4 @@
 # Network Security Configuration
-
 # Global network settings
 global:
   nfsServer: "192.168.4.159"
@@ -53,7 +52,12 @@ networkPolicies:
                 port: 443
               - protocol: TCP
                 port: 80
-
+          - to: []
+            ports:
+              - protocol: TCP
+                port: 587
+              - protocol: TCP
+                port: 465
   applications:
     namespace: applications
     enabled: true
