@@ -25,6 +25,9 @@ secrets/
 !external-secrets.yaml
 !*external-secrets*
 
+# Allow encrypted sealed secrets, overriding the broader rule above
+!*-sealed-secret.yaml
+
 # Helm
 *.tgz
 charts/*.lock
