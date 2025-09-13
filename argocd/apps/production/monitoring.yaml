@@ -4,7 +4,7 @@ metadata:
   name: monitoring-production
   namespace: argocd
   finalizers:
-    - resources-finalizer.argocd.argroj.io
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
@@ -13,7 +13,6 @@ spec:
     path: charts/applications/monitoring
     helm:
       values: |
-        # The conflicting 'grafanaSmtp' block has been removed.
         kube-prometheus-stack:
           grafana:
             ingress:
@@ -33,25 +32,18 @@ spec:
               size: 10Gi
             initChownData:
               enabled: false
+            # Use envFrom to properly inject secret values
+            envFrom:
+              - secretRef:
+                  name: grafana-smtp-secret
             env:
               # Static SMTP settings
               GF_SMTP_ENABLED: "true"
               GF_SMTP_HOST: "smtp.gmail.com:465"
               GF_SMTP_FROM_ADDRESS: "blehnen@gmail.com"
               GF_SMTP_FROM_NAME: "Lab1830 Grafana Alerts"
-              GF_SMTP_STARTTLS_POLICY: "MandatoryStartTLS"
-              
-              # Securely load credentials from the secret
-              GF_SMTP_USER:
-                valueFrom:
-                  secretKeyRef:
-                    name: grafana-smtp-secret
-                    key: GF_SMTP_USER
-              GF_SMTP_PASSWORD:
-                valueFrom:
-                  secretKeyRef:
-                    name: grafana-smtp-secret
-                    key: GF_SMTP_PASSWORD
+              GF_SMTP_SKIP_VERIFY: "false"
+              # Remove STARTTLS_POLICY for port 465 (uses implicit SSL)
             grafana.ini:
               server:
                 root_url: "https://grafana.lab1830.com"
