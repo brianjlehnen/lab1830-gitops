@@ -66,3 +66,17 @@ networkPolicies:
         policyTypes:
           - Ingress
           - Egress
+
+          # Allow Prometheus to scrape all targets
+          - to: []
+            ports:
+              - protocol: TCP
+                port: 9100  # node-exporter
+              - protocol: TCP
+                port: 8080  # kube-state-metrics
+              - protocol: TCP
+                port: 9153  # coredns
+              - protocol: TCP
+                port: 10250 # kubelet
+              - protocol: TCP
+                port: 8085  # velero
