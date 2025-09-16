@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: monitoring-staging
+  name: monitoring-production
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -9,29 +9,81 @@ spec:
   project: default
   source:
     repoURL: git@github.com:brianjlehnen/homelab-gitops.git
-    targetRevision: staging
+    targetRevision: main
     path: charts/applications/monitoring
     helm:
       values: |
         grafanaSmtp:
-          enabled: false
+          enabled: true
         kube-prometheus-stack:
           grafana:
             ingress:
               enabled: true
               ingressClassName: "nginx"
               hosts:
-                - grafana-staging.lab1830.com
+                - grafana.lab1830.com
               annotations:
-                cert-manager.io/cluster-issuer: "selfsigned-clusterissuer-staging"
-                nginx.ingress.kubernetes.io/ssl-redirect: "true"
-                nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+                cert-manager.io/cluster-issuer: "letsencrypt-prod-gitops"
+                nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
               tls:
-                - secretName: grafana-staging-tls
+                - secretName: grafana-production-tls
                   hosts:
-                    - grafana-staging.lab1830.com
+                    - grafana.lab1830.com
             persistence:
+              enabled: true
+              size: 10Gi
+            initChownData:
               enabled: false
+            envFrom:
+              - secretRef:
+                  name: grafana-smtp-secret
+            env:
+              GF_SMTP_ENABLED: "true"
+              GF_SMTP_HOST: "smtp.gmail.com:587"
+              GF_SMTP_FROM_ADDRESS: "blehnen@gmail.com"
+              GF_SMTP_FROM_NAME: "Lab1830 Grafana Alerts"
+              GF_SMTP_STARTTLS_POLICY: "MandatoryStartTLS"
+              GF_SMTP_SKIP_VERIFY: "false"
+            grafana.ini:
+              server:
+                root_url: "https://grafana.lab1830.com"
+                domain: "lab1830.com"
+              unified_alerting:
+                enabled: true
+          prometheus:
+            prometheusSpec:
+              retention: 15d
+              resources:
+                requests:
+                  cpu: 200m
+                  memory: 1200Mi
+                limits:
+                  cpu: 1000m
+                  memory: 2000Mi
+              storageSpec:
+                volumeClaimTemplate:
+                  spec:
+                    accessModes: ["ReadWriteOnce"]
+                    resources:
+                      requests:
+                        storage: 50Gi
+          alertmanager:
+            alertmanagerSpec:
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              storage:
+                volumeClaimTemplate:
+                  spec:
+                    accessModes: ["ReadWriteOnce"]
+                    resources:
+                      requests:
+                        storage: 10Gi
+          kubeStateMetrics:
             resources:
               requests:
                 cpu: 50m
@@ -39,60 +91,17 @@ spec:
               limits:
                 cpu: 200m
                 memory: 256Mi
-          prometheus:
-            prometheusSpec:
-              retention: 7d
-              resources:
-                requests:
-                  cpu: 100m
-                  memory: 400Mi
-                limits:
-                  cpu: 500m
-                  memory: 800Mi
-              storageSpec:
-                volumeClaimTemplate:
-                  spec:
-                    storageClassName: "local-path"
-                    accessModes: ["ReadWriteOnce"]
-                    resources:
-                      requests:
-                        storage: 10Gi
-          alertmanager:
-            alertmanagerSpec:
-              resources:
-                requests:
-                  cpu: 25m
-                  memory: 64Mi
-                limits:
-                  cpu: 100m
-                  memory: 128Mi
-              storage:
-                volumeClaimTemplate:
-                  spec:
-                    storageClassName: "local-path"
-                    accessModes: ["ReadWriteOnce"]
-                    resources:
-                      requests:
-                        storage: 2Gi
-          kubeStateMetrics:
-            resources:
-              requests:
-                cpu: 50m
-                memory: 128Mi
-              limits:
-                cpu: 100m
-                memory: 256Mi
           nodeExporter:
             resources:
               requests:
                 cpu: 20m
                 memory: 64Mi
               limits:
-                cpu: 100m
+                cpu: 200m
                 memory: 128Mi
   destination:
     server: https://kubernetes.default.svc
-    namespace: monitoring-staging
+    namespace: monitoring-production
   syncPolicy:
     automated:
       prune: false
