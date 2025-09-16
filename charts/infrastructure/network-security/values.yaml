@@ -50,10 +50,6 @@ networkPolicies:
               - protocol: TCP
                 port: 443
               - protocol: TCP
-                port: 80
-          - to: []
-            ports:
-              - protocol: TCP
                 port: 6443
           - to: []
             ports:
