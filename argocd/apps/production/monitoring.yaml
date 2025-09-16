@@ -37,13 +37,13 @@ spec:
               - secretRef:
                   name: grafana-smtp-secret
             env:
-              # Static SMTP settings
+              # Static SMTP settings for Gmail with STARTTLS
               GF_SMTP_ENABLED: "true"
-              GF_SMTP_HOST: "smtp.gmail.com:465"
+              GF_SMTP_HOST: "smtp.gmail.com:587"
               GF_SMTP_FROM_ADDRESS: "blehnen@gmail.com"
               GF_SMTP_FROM_NAME: "Lab1830 Grafana Alerts"
+              GF_SMTP_STARTTLS_POLICY: "MandatoryStartTLS"
               GF_SMTP_SKIP_VERIFY: "false"
-              # Remove STARTTLS_POLICY for port 465 (uses implicit SSL)
             grafana.ini:
               server:
                 root_url: "https://grafana.lab1830.com"
