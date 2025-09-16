@@ -5,7 +5,6 @@ global:
   lokiEndpoint: "192.168.4.250"
   lokiPort: 31000
   clusterCIDR: "192.168.4.0/22"
-
 # Network policies per namespace
 networkPolicies:
   monitoring:
@@ -52,6 +51,10 @@ networkPolicies:
                 port: 443
               - protocol: TCP
                 port: 80
+          - to: []
+            ports:
+              - protocol: TCP
+                port: 6443
           - to: []
             ports:
               - protocol: TCP
