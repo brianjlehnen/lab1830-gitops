@@ -24,6 +24,9 @@ spec:
               size: 5Gi
             initChownData:
               enabled: false
+            # Remove any SMTP environment references
+            env: {}
+            envFrom: []
           prometheus:
             prometheusSpec:
               retention: 7d
