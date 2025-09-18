@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: monitoring-production
+  name: monitoring-staging
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -9,99 +9,41 @@ spec:
   project: default
   source:
     repoURL: git@github.com:brianjlehnen/homelab-gitops.git
-    targetRevision: main
+    targetRevision: staging
     path: charts/applications/monitoring
     helm:
       values: |
         grafanaSmtp:
-          enabled: true
+          enabled: false
         kube-prometheus-stack:
           grafana:
             ingress:
-              enabled: true
-              ingressClassName: "nginx"
-              hosts:
-                - grafana.lab1830.com
-              annotations:
-                cert-manager.io/cluster-issuer: "letsencrypt-prod-gitops"
-                nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-              tls:
-                - secretName: grafana-production-tls
-                  hosts:
-                    - grafana.lab1830.com
+              enabled: false
             persistence:
               enabled: true
-              size: 10Gi
+              size: 5Gi
             initChownData:
               enabled: false
-            envFrom:
-              - secretRef:
-                  name: grafana-smtp-secret
-            env:
-              GF_SMTP_ENABLED: "true"
-              GF_SMTP_HOST: "smtp.gmail.com:587"
-              GF_SMTP_FROM_ADDRESS: "blehnen@gmail.com"
-              GF_SMTP_FROM_NAME: "Lab1830 Grafana Alerts"
-              GF_SMTP_STARTTLS_POLICY: "MandatoryStartTLS"
-              GF_SMTP_SKIP_VERIFY: "false"
-            grafana.ini:
-              server:
-                root_url: "https://grafana.lab1830.com"
-                domain: "lab1830.com"
-              unified_alerting:
-                enabled: true
           prometheus:
             prometheusSpec:
-              retention: 15d
+              retention: 7d
               resources:
                 requests:
-                  cpu: 200m
-                  memory: 1200Mi
+                  cpu: 100m
+                  memory: 600Mi
                 limits:
-                  cpu: 1000m
-                  memory: 2000Mi
+                  cpu: 500m
+                  memory: 1000Mi
               storageSpec:
                 volumeClaimTemplate:
                   spec:
                     accessModes: ["ReadWriteOnce"]
                     resources:
                       requests:
-                        storage: 50Gi
-          alertmanager:
-            alertmanagerSpec:
-              resources:
-                requests:
-                  cpu: 50m
-                  memory: 128Mi
-                limits:
-                  cpu: 200m
-                  memory: 256Mi
-              storage:
-                volumeClaimTemplate:
-                  spec:
-                    accessModes: ["ReadWriteOnce"]
-                    resources:
-                      requests:
-                        storage: 10Gi
-          kubeStateMetrics:
-            resources:
-              requests:
-                cpu: 50m
-                memory: 128Mi
-              limits:
-                cpu: 200m
-                memory: 256Mi
-          nodeExporter:
-            resources:
-              requests:
-                cpu: 20m
-                memory: 64Mi
-              limits:
-                cpu: 200m
-                memory: 128Mi
+                        storage: 20Gi
   destination:
     server: https://kubernetes.default.svc
-    namespace: monitoring-production
+    namespace: monitoring-staging
   syncPolicy:
     automated:
       prune: false
