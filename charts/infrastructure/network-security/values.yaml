@@ -1,10 +1,10 @@
 # Network Security Configuration
 # Global network settings
 global:
-  nfsServer: "192.168.4.159"
-  lokiEndpoint: "192.168.4.250"
+  nfsServer: "192.168.x.159"
+  lokiEndpoint: "192.168.x.250"
   lokiPort: 31000
-  clusterCIDR: "192.168.4.0/22"
+  clusterCIDR: "192.168.x.0/22"
 # Network policies per namespace
 networkPolicies:
   monitoring:
@@ -30,7 +30,7 @@ networkPolicies:
                 port: 53
           - to:
             - ipBlock:
-                cidr: "192.168.4.159/32"
+                cidr: "192.168.x.159/32"
             ports:
               - protocol: TCP
                 port: 2049

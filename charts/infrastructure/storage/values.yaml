@@ -1,5 +1,5 @@
 nfs:
-  server: 192.168.4.159
+  server: 192.168.x.159
 storageClasses:
   nfsLogs:
     name: nfs-logs

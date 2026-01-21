@@ -94,7 +94,7 @@ nfsGateway:
     accessKey: "velero"
     secretKey: "velero123"
   nfs:
-    server: "192.168.4.159"
+    server: "192.168.x.159"
     path: "/volume1/Backups"
   resources:
     requests:

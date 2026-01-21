@@ -33,7 +33,6 @@ This repository contains Helm charts and ArgoCD applications for managing a hybr
 │   │   ├── restic
 │   │   ├── vault
 │   │   ├── velero
-│   │   ├── wireguard
 │   │   └── wiz-connector
 │   └── infrastructure
 │       ├── loki-external

@@ -21,10 +21,10 @@ spec:
       values: |
         # Staging-specific network configuration
         global:
-          nfsServer: "192.168.4.159"
-          lokiEndpoint: "192.168.4.250"
+          nfsServer: "192.168.x.159"
+          lokiEndpoint: "192.168.x.250"
           lokiPort: 31000
-          clusterCIDR: "192.168.5.0/24"
+          clusterCIDR: "192.168.y.0/24"
         
         # Network policies for staging (vault removed)
         networkPolicies:
