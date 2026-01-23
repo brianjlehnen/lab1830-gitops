@@ -19,6 +19,10 @@ spec:
             bootstrap:
               email: "brian@lab1830.com"
               password: "staging-initial-admin-pw"
+            postgresql:
+              password: "authentik-staging-db-password"
+            redis:
+              password: ""
           
           server:
             replicas: 1
@@ -35,6 +39,9 @@ spec:
             enabled: true
             image:
               tag: latest
+            auth:
+              password: "authentik-staging-db-password"
+              postgresPassword: "authentik-staging-db-password"
             primary:
               persistence:
                 storageClass: local-path
@@ -43,6 +50,8 @@ spec:
             enabled: true
             image:
               tag: latest
+            auth:
+              enabled: false
             master:
               persistence:
                 storageClass: local-path
