@@ -38,7 +38,7 @@ spec:
           postgresql:
             enabled: true
             image:
-              tag: latest
+              tag: "18"
             auth:
               username: authentik
               database: authentik
@@ -50,7 +50,7 @@ spec:
           redis:
             enabled: true
             image:
-              tag: latest
+              tag: "8"
             auth:
               enabled: false
             master:
