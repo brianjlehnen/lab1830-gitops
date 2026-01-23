@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: authentik-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    targetRevision: staging
+    path: charts/applications/authentik
+    helm:
+      values: |
+        authentik:
+          secret_key: "staging-authentik-secret-key-change-me-32chars!"
+          
+          server:
+            ingress:
+              hosts:
+                - auth-staging.lab1830.com
+              tls:
+                - hosts:
+                    - auth-staging.lab1830.com
+                  secretName: authentik-staging-tls
+        
+        postgresql:
+          auth:
+            password: "staging-postgres-password-change"
+        
+        redis:
+          auth:
+            password: "staging-redis-password-change"
+        
+        global:
+          env:
+            - name: AUTHENTIK_BOOTSTRAP_EMAIL
+              value: "brian@lab1830.com"
+            - name: AUTHENTIK_BOOTSTRAP_PASSWORD
+              value: "staging-initial-admin-pw"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: authentik-staging
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

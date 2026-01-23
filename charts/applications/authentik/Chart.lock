@@ -1,0 +1,12 @@
+dependencies:
+- name: authentik
+  repository: https://charts.goauthentik.io
+  version: 2024.12.1
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 16.4.1
+- name: redis
+  repository: https://charts.bitnami.com/bitnami
+  version: 20.6.0
+digest: sha256:8fe45dcca5be9523475fe85c1776b1b2a147c7bb72d1bdc51e1670a803b52065
+generated: "2026-01-23T17:35:26.972422354Z"
