@@ -16,6 +16,9 @@ spec:
         authentik:
           authentik:
             secret_key: "staging-authentik-secret-key-change-me-32chars!"
+            bootstrap:
+              email: "brian@lab1830.com"
+              password: "staging-initial-admin-pw"
           
           server:
             replicas: 1
@@ -43,10 +46,6 @@ spec:
             master:
               persistence:
                 storageClass: nfs-client
-          
-          env:
-            AUTHENTIK_BOOTSTRAP_EMAIL: brian@lab1830.com
-            AUTHENTIK_BOOTSTRAP_PASSWORD: staging-initial-admin-pw
   destination:
     server: https://kubernetes.default.svc
     namespace: authentik-staging
