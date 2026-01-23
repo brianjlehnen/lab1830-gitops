@@ -26,22 +26,22 @@ spec:
           
           worker:
             replicas: 1
-          
-          postgresql:
-            enabled: true
-            image:
-              tag: latest
-            primary:
-              persistence:
-                storageClass: nfs-client
-          
-          redis:
-            enabled: true
-            image:
-              tag: latest
-            master:
-              persistence:
-                storageClass: nfs-client
+        
+        postgresql:
+          enabled: true
+          image:
+            tag: latest
+          primary:
+            persistence:
+              storageClass: nfs-client
+        
+        redis:
+          enabled: true
+          image:
+            tag: latest
+          master:
+            persistence:
+              storageClass: nfs-client
         
         env:
           AUTHENTIK_BOOTSTRAP_EMAIL: brian@lab1830.com
