@@ -28,10 +28,14 @@ spec:
         postgresql:
           auth:
             password: "staging-postgres-password-change"
+          image:
+            tag: latest
         
         redis:
           auth:
             password: "staging-redis-password-change"
+          image:
+            tag: latest
         
         global:
           env:
