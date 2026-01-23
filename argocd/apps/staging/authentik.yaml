@@ -32,9 +32,11 @@ spec:
             tag: latest
           primary:
             podSecurityContext:
-              fsGroup: 0
+              fsGroup: 1001
             containerSecurityContext:
-              runAsUser: 0
+              runAsUser: 1001
+          volumePermissions:
+            enabled: true
         
         redis:
           auth:
