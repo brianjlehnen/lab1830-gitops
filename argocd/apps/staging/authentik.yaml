@@ -40,8 +40,9 @@ spec:
             image:
               tag: latest
             auth:
+              username: authentik
+              database: authentik
               password: "authentik-staging-db-password"
-              postgresPassword: "authentik-staging-db-password"
             primary:
               persistence:
                 storageClass: local-path
