@@ -37,7 +37,7 @@ spec:
               tag: latest
             primary:
               persistence:
-                storageClass: nfs-client
+                storageClass: local-path
           
           redis:
             enabled: true
@@ -45,7 +45,7 @@ spec:
               tag: latest
             master:
               persistence:
-                storageClass: nfs-client
+                storageClass: local-path
   destination:
     server: https://kubernetes.default.svc
     namespace: authentik-staging
