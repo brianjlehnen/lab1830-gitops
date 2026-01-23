@@ -14,7 +14,8 @@ spec:
     helm:
       values: |
         authentik:
-          secret_key: "staging-authentik-secret-key-change-me-32chars!"
+          authentik:
+            secret_key: "staging-authentik-secret-key-change-me-32chars!"
           
           server:
             replicas: 1
@@ -26,26 +27,26 @@ spec:
           
           worker:
             replicas: 1
-        
-        postgresql:
-          enabled: true
-          image:
-            tag: latest
-          primary:
-            persistence:
-              storageClass: nfs-client
-        
-        redis:
-          enabled: true
-          image:
-            tag: latest
-          master:
-            persistence:
-              storageClass: nfs-client
-        
-        env:
-          AUTHENTIK_BOOTSTRAP_EMAIL: brian@lab1830.com
-          AUTHENTIK_BOOTSTRAP_PASSWORD: staging-initial-admin-pw
+          
+          postgresql:
+            enabled: true
+            image:
+              tag: latest
+            primary:
+              persistence:
+                storageClass: nfs-client
+          
+          redis:
+            enabled: true
+            image:
+              tag: latest
+            master:
+              persistence:
+                storageClass: nfs-client
+          
+          env:
+            AUTHENTIK_BOOTSTRAP_EMAIL: brian@lab1830.com
+            AUTHENTIK_BOOTSTRAP_PASSWORD: staging-initial-admin-pw
   destination:
     server: https://kubernetes.default.svc
     namespace: authentik-staging
