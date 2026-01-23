@@ -17,37 +17,25 @@ spec:
           secret_key: "staging-authentik-secret-key-change-me-32chars!"
           
           server:
+            replicas: 1
             ingress:
+              enabled: true
+              ingressClassName: nginx
               hosts:
                 - auth-staging.lab1830.com
-              tls:
-                - hosts:
-                    - auth-staging.lab1830.com
-                  secretName: authentik-staging-tls
+          
+          worker:
+            replicas: 1
+          
+          postgresql:
+            enabled: true
+          
+          redis:
+            enabled: true
         
-        postgresql:
-          auth:
-            password: "staging-postgres-password-change"
-          image:
-            tag: latest
-          primary:
-            podSecurityContext:
-              fsGroup: 1001
-          volumePermissions:
-            enabled: false
-        
-        redis:
-          auth:
-            password: "staging-redis-password-change"
-          image:
-            tag: latest
-        
-        global:
-          env:
-            - name: AUTHENTIK_BOOTSTRAP_EMAIL
-              value: "brian@lab1830.com"
-            - name: AUTHENTIK_BOOTSTRAP_PASSWORD
-              value: "staging-initial-admin-pw"
+        env:
+          AUTHENTIK_BOOTSTRAP_EMAIL: brian@lab1830.com
+          AUTHENTIK_BOOTSTRAP_PASSWORD: staging-initial-admin-pw
   destination:
     server: https://kubernetes.default.svc
     namespace: authentik-staging
