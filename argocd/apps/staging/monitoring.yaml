@@ -18,15 +18,39 @@ spec:
         kube-prometheus-stack:
           grafana:
             ingress:
-              enabled: false
+              enabled: true
+              ingressClassName: nginx
+              hosts:
+                - grafana-staging.lab1830.com
+              tls:
+                - secretName: grafana-staging-tls
+                  hosts:
+                    - grafana-staging.lab1830.com
             persistence:
               enabled: true
               size: 5Gi
             initChownData:
               enabled: false
-            # Remove any SMTP environment references
             env: {}
             envFrom: []
+            grafana.ini:
+              server:
+                root_url: https://grafana-staging.lab1830.com
+              auth:
+                signout_redirect_url: https://auth-staging.lab1830.com/application/o/grafana-staging/end-session/
+                oauth_auto_login: false
+              auth.generic_oauth:
+                enabled: true
+                name: Authentik
+                allow_sign_up: true
+                client_id: grafana-staging
+                client_secret: ${GRAFANA_OAUTH_CLIENT_SECRET}
+                scopes: openid profile email
+                auth_url: https://auth-staging.lab1830.com/application/o/authorize/
+                token_url: https://auth-staging.lab1830.com/application/o/token/
+                api_url: https://auth-staging.lab1830.com/application/o/userinfo/
+                role_attribute_path: contains(groups, 'Grafana Admins') && 'Admin' || 'Viewer'
+            envFromSecret: grafana-oauth-secret
           prometheus:
             prometheusSpec:
               retention: 7d
