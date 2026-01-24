@@ -29,7 +29,7 @@ spec:
         networkPolicies:
           monitoring:
             namespace: monitoring-staging
-            enabled: true
+            enabled: false
             policies:
               - name: monitoring-security-policy
                 podSelector: {}
