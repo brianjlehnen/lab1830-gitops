@@ -31,6 +31,10 @@ spec:
               ingressClassName: nginx
               hosts:
                 - auth-staging.lab1830.com
+              tls:
+                - hosts:
+                    - auth-staging.lab1830.com
+                  secretName: authentik-staging-tls
           
           worker:
             replicas: 1
