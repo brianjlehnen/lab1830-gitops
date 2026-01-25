@@ -7,9 +7,8 @@ kyverno:
     replicas: 1
   reportsController:
     replicas: 1
-  cleanupJobs:
-    cleanupReports:
-      enabled: false
+  policyReportsCleanup:
+    enabled: false
 
 policy-reporter:
   ui:
