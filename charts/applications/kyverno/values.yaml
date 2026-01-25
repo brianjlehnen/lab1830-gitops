@@ -1,4 +1,6 @@
 kyverno:
+  crds:
+    install: false
   admissionController:
     replicas: 1
   backgroundController:
