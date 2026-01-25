@@ -7,6 +7,17 @@ kyverno:
     replicas: 1
   reportsController:
     replicas: 1
+  cleanupJobs:
+    admissionReports:
+      image:
+        registry: docker.io
+        repository: bitnami/kubectl
+        tag: "1.31"
+    clusterAdmissionReports:
+      image:
+        registry: docker.io
+        repository: bitnami/kubectl
+        tag: "1.31"
 
 policy-reporter:
   ui:
