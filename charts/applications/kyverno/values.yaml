@@ -7,6 +7,9 @@ kyverno:
     replicas: 1
   reportsController:
     replicas: 1
+  cleanupJobs:
+    cleanupReports:
+      enabled: false
 
 policy-reporter:
   ui:
@@ -23,6 +26,3 @@ policy-reporter:
     enabled: true
   metrics:
     enabled: true
-  reportFilter:
-    autoCleanUp:
-      enabled: false
