@@ -26,7 +26,5 @@ spec:
   ignoreDifferences:
     - group: kyverno.io
       kind: ClusterPolicy
-      jqPathExpressions:
-        - .spec.admission
-        - .spec.emitWarning
-        - .spec.rules[].skipBackgroundRequests
+      jsonPointers:
+        - /spec
