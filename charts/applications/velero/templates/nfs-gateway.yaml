@@ -6,6 +6,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app: nfs-gateway
+    app.kubernetes.io/name: nfs-gateway
 spec:
   replicas: 1
   selector:
@@ -15,6 +16,7 @@ spec:
     metadata:
       labels:
         app: nfs-gateway
+        app.kubernetes.io/name: nfs-gateway
     spec:
       containers:
       - name: minio
@@ -59,6 +61,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app: nfs-gateway
+    app.kubernetes.io/name: nfs-gateway
 spec:
   selector:
     app: nfs-gateway
