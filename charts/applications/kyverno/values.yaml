@@ -7,3 +7,19 @@ kyverno:
     replicas: 1
   reportsController:
     replicas: 1
+
+policy-reporter:
+  ui:
+    enabled: true
+    ingress:
+      enabled: true
+      className: nginx
+      hosts:
+        - host: kyverno-staging.lab1830.com
+          paths:
+            - path: /
+              pathType: Prefix
+  kyvernoPlugin:
+    enabled: true
+  metrics:
+    enabled: true
