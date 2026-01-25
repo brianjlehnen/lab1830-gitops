@@ -1,0 +1,27 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-latest-tag
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: validate-image-tag
+      match:
+        any:
+        - resources:
+            kinds:
+              - Pod
+      exclude:
+        any:
+        - resources:
+            namespaces:
+              - kube-system
+              - kube-public
+              - kube-node-lease
+      validate:
+        message: "Using 'latest' image tag is not allowed. Use a specific version tag."
+        pattern:
+          spec:
+            containers:
+              - image: "!*:latest"
