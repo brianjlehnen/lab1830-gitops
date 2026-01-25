@@ -10,14 +10,14 @@ kyverno:
   cleanupJobs:
     admissionReports:
       image:
-        registry: docker.io
-        repository: bitnami/kubectl
-        tag: "1.31"
+        registry: ghcr.io
+        repository: kyverno/kubectl
+        tag: "latest"
     clusterAdmissionReports:
       image:
-        registry: docker.io
-        repository: bitnami/kubectl
-        tag: "1.31"
+        registry: ghcr.io
+        repository: kyverno/kubectl
+        tag: "latest"
 
 policy-reporter:
   ui:
