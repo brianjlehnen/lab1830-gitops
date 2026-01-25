@@ -7,17 +7,6 @@ kyverno:
     replicas: 1
   reportsController:
     replicas: 1
-  cleanupJobs:
-    admissionReports:
-      image:
-        registry: ghcr.io
-        repository: kyverno/kubectl
-        tag: "latest"
-    clusterAdmissionReports:
-      image:
-        registry: ghcr.io
-        repository: kyverno/kubectl
-        tag: "latest"
 
 policy-reporter:
   ui:
@@ -34,3 +23,6 @@ policy-reporter:
     enabled: true
   metrics:
     enabled: true
+  reportFilter:
+    autoCleanUp:
+      enabled: false
