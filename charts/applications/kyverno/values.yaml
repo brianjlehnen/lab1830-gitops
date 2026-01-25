@@ -1,4 +1,4 @@
-kyverno:
+ kyverno:
   crds:
     install: false
   admissionController:
