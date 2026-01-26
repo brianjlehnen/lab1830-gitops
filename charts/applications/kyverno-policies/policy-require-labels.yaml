@@ -21,6 +21,7 @@ spec:
               - kube-node-lease
               - metallb-system
               - kyverno
+              - velero
       validate:
         message: "The label 'app.kubernetes.io/name' is required."
         pattern:
