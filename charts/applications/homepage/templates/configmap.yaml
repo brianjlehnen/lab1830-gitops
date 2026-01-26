@@ -110,7 +110,7 @@ data:
         - Kyverno:
             href: https://kyverno.lab1830.com
             description: Kubernetes policy management
-            icon: mdi-shield-check
+            icon: https://github.com/kyverno/kyverno/raw/main/img/logo.png
             
         - Goldilocks:
             href: https://goldilocks.lab1830.com
@@ -131,7 +131,7 @@ data:
         - Homebox:
             href: https://homebox.lab1830.com
             description: Home inventory management
-            icon: mdi-home-variant
+            icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/homebox.png
             
         - Tandoor:
             href: https://tandoor.lab1830.com
