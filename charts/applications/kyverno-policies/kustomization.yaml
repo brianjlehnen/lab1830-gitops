@@ -3,3 +3,5 @@ kind: Kustomization
 resources:
   - policy-require-labels.yaml
   - policy-disallow-latest-tag.yaml
+  - policy-require-resource-limits.yaml
+  - policy-disallow-privileged.yaml
