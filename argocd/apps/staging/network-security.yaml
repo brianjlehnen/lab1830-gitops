@@ -25,12 +25,11 @@ spec:
           lokiEndpoint: "192.168.4.250"
           lokiPort: 31000
           clusterCIDR: "192.168.5.0/24"
-        
         # Network policies for staging (vault removed)
         networkPolicies:
           monitoring:
             namespace: monitoring-staging
-            enabled: true
+            enabled: false
             policies:
               - name: monitoring-security-policy
                 podSelector: {}
@@ -49,6 +48,28 @@ spec:
                         port: 53
                       - protocol: TCP
                         port: 53
+                  - to:
+                    - namespaceSelector:
+                        matchLabels:
+                          kubernetes.io/metadata.name: authentik-staging
+                    ports:
+                      - protocol: TCP
+                        port: 80
+                      - protocol: TCP
+                        port: 443
+                      - protocol: TCP
+                        port: 9000
+                      - protocol: TCP
+                        port: 9443
+                  - to:
+                    - namespaceSelector:
+                        matchLabels:
+                          kubernetes.io/metadata.name: ingress-nginx
+                    ports:
+                      - protocol: TCP
+                        port: 80
+                      - protocol: TCP
+                        port: 443
           network:
             enabled: true
           argocd:
@@ -56,11 +77,9 @@ spec:
           applications:
             namespace: applications-staging
             enabled: false
-  
   destination:
     server: https://kubernetes.default.svc
     namespace: security
-  
   syncPolicy:
     automated:
       prune: false

@@ -1,0 +1,72 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: authentik-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    targetRevision: staging
+    path: charts/applications/authentik
+    helm:
+      values: |
+        authentik:
+          authentik:
+            secret_key: "staging-authentik-secret-key-change-me-32chars!"
+            bootstrap:
+              email: "brian@lab1830.com"
+              password: "staging-initial-admin-pw"
+            postgresql:
+              password: "authentik-staging-db-password"
+            redis:
+              password: ""
+          server:
+            replicas: 1
+            ingress:
+              enabled: true
+              ingressClassName: nginx
+              hosts:
+                - auth-staging.lab1830.com
+              tls:
+                - hosts:
+                    - auth-staging.lab1830.com
+                  secretName: authentik-staging-tls
+          worker:
+            replicas: 1
+          postgresql:
+            enabled: true
+            image:
+              tag: "18"
+            auth:
+              username: authentik
+              database: authentik
+              password: "authentik-staging-db-password"
+            primary:
+              persistence:
+                storageClass: local-path
+              resources:
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+          redis:
+            enabled: true
+            image:
+              tag: "8"
+            auth:
+              enabled: false
+            master:
+              persistence:
+                storageClass: local-path
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: authentik-staging
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
