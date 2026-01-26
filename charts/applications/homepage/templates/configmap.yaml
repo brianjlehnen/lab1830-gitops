@@ -136,7 +136,7 @@ data:
         - Tandoor:
             href: https://tandoor.lab1830.com
             description: Recipe management & meal planning
-            icon: tandoor
+            icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/tandoor-recipes.png
 
     - Media Management:
         - Plex:
