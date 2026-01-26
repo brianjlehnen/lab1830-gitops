@@ -3,12 +3,40 @@ kyverno:
     install: false
   admissionController:
     replicas: 1
+    resources:
+      limits:
+        memory: 384Mi
+        cpu: 200m
+      requests:
+        memory: 128Mi
+        cpu: 50m
   backgroundController:
     replicas: 1
+    resources:
+      limits:
+        memory: 256Mi
+        cpu: 100m
+      requests:
+        memory: 64Mi
+        cpu: 25m
   cleanupController:
     replicas: 1
+    resources:
+      limits:
+        memory: 128Mi
+        cpu: 100m
+      requests:
+        memory: 64Mi
+        cpu: 25m
   reportsController:
     replicas: 1
+    resources:
+      limits:
+        memory: 256Mi
+        cpu: 100m
+      requests:
+        memory: 64Mi
+        cpu: 25m
   policyReportsCleanup:
     enabled: false
 
