@@ -65,6 +65,11 @@ data:
             description: Network storage & file services
             icon: synology-dsm
             
+        - Proxmox:
+            href: https://proxmox.lab1830.com
+            description: Virtualization platform
+            icon: proxmox
+            
         - Traefik:
             href: https://traefik.lab1830.com
             description: Reverse proxy & SSL termination
@@ -86,11 +91,6 @@ data:
             description: Service availability monitoring
             icon: uptime-kuma
 
-        - Speedtest Tracker:
-            href: https://speedtest.lab1830.com
-            description: Internet speed monitoring and history
-            icon: speedtest-tracker.png
-
         - SmokePing:
             href: https://smokeping.lab1830.com
             description: Network latency monitoring & graphing
@@ -101,6 +101,21 @@ data:
             href: https://argocd.lab1830.com
             description: GitOps deployment controller
             icon: argo-cd
+            
+        - Authentik:
+            href: https://auth.lab1830.com
+            description: Identity provider & SSO
+            icon: authentik
+            
+        - Kyverno:
+            href: https://kyverno.lab1830.com
+            description: Kubernetes policy management
+            icon: kyverno
+            
+        - Goldilocks:
+            href: https://goldilocks.lab1830.com
+            description: Resource recommendation dashboard
+            icon: goldilocks
             
         - Portainer:
             href: https://portainer.lab1830.com
@@ -113,15 +128,10 @@ data:
             icon: dockge
 
     - Utilities & Apps:
-        - Mealie:
-            href: https://mealie.lab1830.com
+        - Tandoor:
+            href: https://tandoor.lab1830.com
             description: Recipe management & meal planning
-            icon: mealie
-
-        - Grocy:
-            href: https://grocy.lab1830.com
-            description: Grocery & household management
-            icon: grocy
+            icon: tandoor
 
     - Media Management:
         - Plex:
@@ -198,6 +208,10 @@ data:
             - abbr: AI
               href: https://claude.ai/new
               icon: claude-ai
+        - Anthropic Console:
+            - abbr: AC
+              href: https://console.anthropic.com
+              icon: anthropic
               
     - Productivity:
         - Obsidian Vault:
