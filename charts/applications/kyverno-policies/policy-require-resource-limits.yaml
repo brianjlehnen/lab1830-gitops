@@ -20,6 +20,11 @@ spec:
               - kube-public
               - kube-node-lease
               - kyverno
+              - argocd
+              - monitoring
+              - monitoring-staging
+              - metallb-system
+              - ingress-nginx
       validate:
         message: "CPU and memory limits are required."
         pattern:
