@@ -110,12 +110,12 @@ data:
         - Kyverno:
             href: https://kyverno.lab1830.com
             description: Kubernetes policy management
-            icon: kyverno
+            icon: mdi-shield-check
             
         - Goldilocks:
             href: https://goldilocks.lab1830.com
             description: Resource recommendation dashboard
-            icon: goldilocks
+            icon: mdi-scale-balance
             
         - Portainer:
             href: https://portainer.lab1830.com
@@ -128,6 +128,11 @@ data:
             icon: dockge
 
     - Utilities & Apps:
+        - Homebox:
+            href: https://homebox.lab1830.com
+            description: Home inventory management
+            icon: mdi-home-variant
+            
         - Tandoor:
             href: https://tandoor.lab1830.com
             description: Recipe management & meal planning
