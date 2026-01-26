@@ -25,6 +25,8 @@ spec:
               - monitoring-staging
               - metallb-system
               - ingress-nginx
+              - monitoring-production
+              - logging
       validate:
         message: "CPU and memory limits are required."
         pattern:
