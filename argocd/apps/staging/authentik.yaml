@@ -23,7 +23,6 @@ spec:
               password: "authentik-staging-db-password"
             redis:
               password: ""
-          
           server:
             replicas: 1
             ingress:
@@ -35,10 +34,8 @@ spec:
                 - hosts:
                     - auth-staging.lab1830.com
                   secretName: authentik-staging-tls
-          
           worker:
             replicas: 1
-          
           postgresql:
             enabled: true
             image:
@@ -50,7 +47,13 @@ spec:
             primary:
               persistence:
                 storageClass: local-path
-          
+              resources:
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
           redis:
             enabled: true
             image:
