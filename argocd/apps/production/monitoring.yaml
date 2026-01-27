@@ -21,7 +21,7 @@ spec:
               hosts:
                 - grafana.lab1830.com
               annotations:
-                cert-manager.io/cluster-issuer: "letsencrypt-prod"
+                cert-manager.io/cluster-issuer: "letsencrypt-prod-gitops"
                 nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
               tls:
                 - secretName: grafana-production-tls
@@ -32,12 +32,10 @@ spec:
               size: 10Gi
             initChownData:
               enabled: false
-            # Use envFrom to properly inject secret values
             envFrom:
               - secretRef:
                   name: grafana-smtp-secret
             env:
-              # Static SMTP settings for Gmail with STARTTLS
               GF_SMTP_ENABLED: "true"
               GF_SMTP_HOST: "smtp.gmail.com:587"
               GF_SMTP_FROM_ADDRESS: "blehnen@gmail.com"
@@ -50,6 +48,18 @@ spec:
                 domain: "lab1830.com"
               unified_alerting:
                 enabled: true
+              auth.generic_oauth:
+                enabled: true
+                name: Authentik
+                allow_sign_up: true
+                client_id: grafana
+                client_secret: 5HukVhR6Cbqbr3UuyIc5VCxaXfuADWpyL3X7KWvDGh6xMPhcKHkUmu0h5u0jnRhMnopYpm00g5sJtIEkmOodhkjCUr3OGUCkHT6OkJLKUjx9A7kX9ZzzJZAMfkOjIdhF
+                scopes: openid profile email
+                auth_url: https://auth.lab1830.com/application/o/authorize/
+                token_url: https://auth.lab1830.com/application/o/token/
+                api_url: https://auth.lab1830.com/application/o/userinfo/
+                role_attribute_path: contains(groups[*], 'authentik Admins') && 'Admin' || 'Viewer'
+                tls_skip_verify_insecure: false
           prometheus:
             prometheusSpec:
               retention: 15d
