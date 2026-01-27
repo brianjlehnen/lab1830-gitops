@@ -65,11 +65,7 @@ spec:
                 userPasswordKey: postgresql-password
             primary:
               persistence:
-                storageClass: nfs-client
-              podSecurityContext:
-                fsGroup: 1001
-              containerSecurityContext:
-                runAsUser: 1001
+                storageClass: local-path
               resources:
                 limits:
                   cpu: 500m
@@ -85,7 +81,7 @@ spec:
               enabled: false
             master:
               persistence:
-                storageClass: nfs-client
+                storageClass: local-path
   destination:
     server: https://kubernetes.default.svc
     namespace: authentik
