@@ -35,8 +35,6 @@ spec:
             envFrom:
               - secretRef:
                   name: grafana-smtp-secret
-              - secretRef:
-                  name: grafana-oauth-secret
             env:
               GF_SMTP_ENABLED: "true"
               GF_SMTP_HOST: "smtp.gmail.com:587"
