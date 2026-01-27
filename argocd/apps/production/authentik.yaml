@@ -66,6 +66,10 @@ spec:
             primary:
               persistence:
                 storageClass: nfs-client
+              podSecurityContext:
+                fsGroup: 1001
+              containerSecurityContext:
+                runAsUser: 1001
               resources:
                 limits:
                   cpu: 500m
