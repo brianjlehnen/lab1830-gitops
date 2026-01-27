@@ -1,0 +1,91 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: authentik-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:brianjlehnen/homelab-gitops.git
+    targetRevision: main
+    path: charts/applications/authentik
+    helm:
+      values: |
+        authentik:
+          authentik:
+            secret_key: ""
+            bootstrap:
+              email: "brian@lab1830.com"
+              password: ""
+            postgresql:
+              password: ""
+            redis:
+              password: ""
+          global:
+            env:
+              - name: AUTHENTIK_SECRET_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: authentik-secrets
+                    key: secret-key
+              - name: AUTHENTIK_BOOTSTRAP_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: authentik-secrets
+                    key: bootstrap-password
+              - name: AUTHENTIK_POSTGRESQL__PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: authentik-secrets
+                    key: postgresql-password
+          server:
+            replicas: 1
+            ingress:
+              enabled: true
+              ingressClassName: nginx
+              hosts:
+                - auth.lab1830.com
+              tls:
+                - hosts:
+                    - auth.lab1830.com
+                  secretName: authentik-production-tls
+          worker:
+            replicas: 1
+          postgresql:
+            enabled: true
+            image:
+              tag: "18"
+            auth:
+              username: authentik
+              database: authentik
+              existingSecret: authentik-secrets
+              secretKeys:
+                userPasswordKey: postgresql-password
+            primary:
+              persistence:
+                storageClass: nfs-client
+              resources:
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+          redis:
+            enabled: true
+            image:
+              tag: "8"
+            auth:
+              enabled: false
+            master:
+              persistence:
+                storageClass: nfs-client
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: authentik
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
