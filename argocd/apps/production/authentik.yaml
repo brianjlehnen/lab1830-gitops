@@ -53,6 +53,14 @@ spec:
                   secretName: authentik-production-tls
           worker:
             replicas: 1
+            volumes:
+              - name: shm
+                emptyDir:
+                  medium: Memory
+                  sizeLimit: 64Mi
+            volumeMounts:
+              - name: shm
+                mountPath: /dev/shm
           postgresql:
             enabled: true
             image:
