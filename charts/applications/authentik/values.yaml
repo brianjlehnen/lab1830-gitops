@@ -1,8 +1,6 @@
 # Authentik SSO Configuration for Lab1830
-
 authentik:
   secret_key: "" # Override in ArgoCD app
-  
   authentik:
     email:
       from: "authentik@lab1830.com"
@@ -11,7 +9,6 @@ authentik:
       use_tls: true
     error_reporting:
       enabled: false
-  
   server:
     replicas: 1
     resources:
@@ -30,7 +27,6 @@ authentik:
         - hosts:
             - auth.lab1830.com
           secretName: authentik-tls
-
   worker:
     replicas: 1
     resources:
@@ -40,10 +36,19 @@ authentik:
       limits:
         cpu: 200m
         memory: 512Mi
-
+    startupProbe:
+      failureThreshold: 120
+      periodSeconds: 10
+      timeoutSeconds: 30
+      initialDelaySeconds: 60
+    livenessProbe:
+      timeoutSeconds: 30
+      periodSeconds: 30
+    readinessProbe:
+      timeoutSeconds: 30
+      periodSeconds: 30
   postgresql:
     enabled: false  # Using subchart instead
-
   redis:
     enabled: false  # Using subchart instead
 
@@ -57,7 +62,7 @@ postgresql:
   primary:
     persistence:
       enabled: true
-      storageClass: nfs-client
+      storageClass: local-path
       size: 8Gi
     resources:
       requests:
@@ -72,12 +77,11 @@ redis:
   enabled: true
   architecture: standalone
   auth:
-    enabled: true
-    password: "" # Override in ArgoCD app
+    enabled: false
   master:
     persistence:
       enabled: true
-      storageClass: nfs-client
+      storageClass: local-path
       size: 2Gi
     resources:
       requests:
