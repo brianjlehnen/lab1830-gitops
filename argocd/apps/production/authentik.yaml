@@ -63,7 +63,15 @@ spec:
                 mountPath: /dev/shm
             startupProbe:
               failureThreshold: 120
-              periodSeconds: 5
+              periodSeconds: 10
+              timeoutSeconds: 30
+              initialDelaySeconds: 60
+            livenessProbe:
+              timeoutSeconds: 30
+              periodSeconds: 30
+            readinessProbe:
+              timeoutSeconds: 30
+              periodSeconds: 30
           postgresql:
             enabled: true
             image:
