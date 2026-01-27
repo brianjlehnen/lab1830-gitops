@@ -61,6 +61,9 @@ spec:
             volumeMounts:
               - name: shm
                 mountPath: /dev/shm
+            startupProbe:
+              failureThreshold: 120
+              periodSeconds: 5
           postgresql:
             enabled: true
             image:
