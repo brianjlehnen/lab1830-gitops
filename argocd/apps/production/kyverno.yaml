@@ -15,6 +15,15 @@ spec:
       valueFiles:
         - values.yaml
       skipCrds: true
+      values: |
+        policy-reporter:
+          ui:
+            ingress:
+              hosts:
+                - host: kyverno.lab1830.com
+                  paths:
+                    - path: /
+                      pathType: Prefix
   destination:
     server: https://kubernetes.default.svc
     namespace: kyverno
