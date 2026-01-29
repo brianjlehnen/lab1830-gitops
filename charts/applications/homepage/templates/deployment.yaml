@@ -14,6 +14,11 @@ spec:
       labels:
         {{- include "homepage.selectorLabels" . | nindent 8 }}
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       initContainers:
         - name: setup-config
           image: busybox:1.35
@@ -24,6 +29,11 @@ spec:
               cp /tmp/config/* /app/config/
               mkdir -p /app/config/logs
               chmod 755 /app/config/logs
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           volumeMounts:
             - name: config-source
               mountPath: /tmp/config
@@ -33,6 +43,12 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
           {{- if .Values.env }}
           env:
             {{- toYaml .Values.env | nindent 12 }}

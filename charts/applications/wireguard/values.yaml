@@ -60,8 +60,9 @@ wireguard:
   allowedIPs: "192.168.4.0/22, 10.8.0.0/24"
   # DNS servers for clients
   dns: "192.168.4.254"
-  # Web UI password (production default)
-  password: "change-to-secure-production-password"
+  # Web UI password - MUST be overridden in production!
+  # Create secret: kubectl create secret generic wireguard-ui-secret -n wireguard --from-literal=password=<secure-password>
+  password: "CHANGE_ME_IN_ARGOCD_VALUES"
 
 # Persistent storage for configuration
 persistence:

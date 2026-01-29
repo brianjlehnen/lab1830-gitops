@@ -17,6 +17,7 @@ spec:
         deploymentMode: SingleBinary
         
         loki:
+          # Authentication disabled - protected by network policies
           auth_enabled: false
           commonConfig:
             replication_factor: 1

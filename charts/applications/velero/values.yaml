@@ -2,6 +2,16 @@
 bucketName: "velero-backups"
 bucketPrefix: ""
 
+# =============================================================================
+# SECURITY WARNING: Default credentials below are for development/staging ONLY
+# For production, create a Kubernetes secret 'velero-minio-credentials' with:
+#   kubectl create secret generic velero-minio-credentials \
+#     --namespace velero \
+#     --from-literal=accessKey=<secure-access-key> \
+#     --from-literal=secretKey=<secure-secret-key>
+# Then override credentials in your ArgoCD application values
+# =============================================================================
+
 # Velero official chart values (updated for v5.x chart)
 velero:
   # Velero server configuration
@@ -126,3 +136,7 @@ serviceMonitor:
   additionalLabels: {}
   interval: 30s
   scrapeTimeout: 10s
+
+# PrometheusRule for backup alerts
+prometheusRule:
+  enabled: false  # Default disabled, enabled per environment

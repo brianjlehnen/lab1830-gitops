@@ -103,7 +103,7 @@ spec:
                 storageClass: local-path
   destination:
     server: https://kubernetes.default.svc
-    namespace: authentik
+    namespace: authentik-production
   syncPolicy:
     syncOptions:
       - CreateNamespace=true

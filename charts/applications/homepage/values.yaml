@@ -37,6 +37,11 @@ nodeSelector: {}
 tolerations: []
 affinity: {}
 env: []
+
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+  # maxUnavailable: 1
 # Homepage configuration
 config:
   # This will be mounted as configmaps

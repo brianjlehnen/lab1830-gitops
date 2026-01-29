@@ -13,7 +13,7 @@ spec:
     path: charts/infrastructure/loki-external
   destination:
     server: https://kubernetes.default.svc
-    namespace: logging
+    namespace: logging-production
   syncPolicy:
     automated:
       prune: true
