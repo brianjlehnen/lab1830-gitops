@@ -77,6 +77,15 @@ spec:
           applications:
             namespace: applications-staging
             enabled: false
+          # Explicitly disable new policies for staging
+          authentik:
+            enabled: false
+          certManager:
+            enabled: false
+          velero:
+            enabled: false
+          kyverno:
+            enabled: false
   destination:
     server: https://kubernetes.default.svc
     namespace: security

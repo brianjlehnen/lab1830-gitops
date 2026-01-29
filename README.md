@@ -1,185 +1,86 @@
 # Lab1830 GitOps Repository
 
-Production homelab infrastructure managed through GitOps workflows using ArgoCD, Helm, and Kubernetes.
+Homelab infrastructure managed through GitOps workflow using ArgoCD.
 
 ## Overview
 
-This repository contains the complete GitOps configuration for a hybrid Kubernetes homelab running production-grade infrastructure services. All deployments are managed declaratively through Git with ArgoCD handling synchronization.
-
-## Technology Stack
-
-**Platform**
-- Kubernetes (k3s) - 3-node production cluster
-- ArgoCD - GitOps continuous delivery
-- Helm - Package management
-
-**Infrastructure**
-- HashiCorp Vault - Secrets management (HA cluster)
-- cert-manager - Automated TLS certificates
-- MetalLB - Bare-metal load balancer
-- NGINX Ingress - Traffic routing
-
-**Observability**
-- Prometheus - Metrics collection
-- Grafana - Visualization and dashboards
-- Loki - Log aggregation
-- Promtail - Log shipping
-
-**Backup and Storage**
-- Velero - Cluster backup and restore
-- Restic - File-level backups
-- NFS CSI Driver - Dynamic storage provisioning
-
-**Security**
-- Network Policies - Pod-to-pod isolation
-- Pod Security Standards - Baseline enforcement
-- RBAC - Role-based access control
-- Wiz - Runtime security monitoring
-
-## Repository Structure
-
-```
-.
-├── argocd/
-│   ├── apps/
-│   │   ├── production/      # Production application definitions
-│   │   └── staging/         # Staging application definitions
-│   └── bootstrap/
-│       ├── production.yaml  # Production app-of-apps
-│       └── staging.yaml     # Staging app-of-apps
-├── charts/
-│   ├── applications/        # Application Helm charts
-│   │   ├── cert-manager/
-│   │   ├── descheduler/
-│   │   ├── goldilocks/
-│   │   ├── homepage/
-│   │   ├── loki/
-│   │   ├── monitoring/
-│   │   ├── promtail/
-│   │   ├── restic/
-│   │   ├── velero/
-│   │   └── wiz-connector/
-│   └── infrastructure/      # Infrastructure Helm charts
-│       ├── loki-external/
-│       ├── namespace-labels/
-│       ├── network-security/
-│       ├── pod-security/
-│       ├── rbac-security/
-│       └── storage/
-└── scripts/
-    └── vault-staging-setup.sh
-```
+This repository contains Helm charts and ArgoCD applications for managing a hybrid Kubernetes + Docker homelab infrastructure with production, staging, and edge environments.
 
 ## Architecture
 
-### GitOps Workflow
+- **Platform:** k3s Kubernetes clusters (production + staging)
+- **GitOps:** ArgoCD with App-of-Apps pattern
+- **Secrets:** SOPS + Age encryption, Kubernetes secrets
+- **Environments:** Production (`main` branch), Staging (`staging` branch), Edge (Raspberry Pi)
 
+## Repository Structure
+```bash
+├── argocd
+│   ├── apps
+│   │   ├── production          # Production ArgoCD Application definitions
+│   │   └── staging             # Staging ArgoCD Application definitions
+│   └── bootstrap
+│       ├── production.yaml     # Production bootstrap (App-of-Apps root)
+│       └── staging.yaml        # Staging bootstrap (App-of-Apps root)
+├── charts
+│   ├── applications
+│   │   ├── authentik           # SSO/Identity Provider
+│   │   ├── cert-manager        # TLS certificate management
+│   │   ├── descheduler         # Pod rescheduling
+│   │   ├── goldilocks          # Resource recommendations
+│   │   ├── homepage            # Dashboard
+│   │   ├── kyverno             # Policy engine
+│   │   ├── kyverno-policies    # Custom Kyverno policies
+│   │   ├── loki                # Log aggregation
+│   │   ├── monitoring          # Prometheus + Grafana stack
+│   │   ├── promtail            # Log shipping
+│   │   ├── velero              # Cluster backups
+│   │   ├── wireguard           # VPN
+│   │   └── wiz-connector       # Security scanning
+│   └── infrastructure
+│       ├── loki-external       # External Loki access (NodePort)
+│       ├── namespace-labels    # Namespace label management
+│       ├── network-security    # NetworkPolicies
+│       ├── pod-security        # PodDisruptionBudgets
+│       ├── rbac-security       # ClusterRoles and bindings
+│       └── storage             # NFS storage classes
+├── scripts
+│   └── vault-staging-setup.sh
+├── CLAUDE.md                   # Claude Code instructions
+└── README.md
 ```
-Git Push → ArgoCD Detects Change → Helm Template → Kubernetes Apply
-                ↓
-        Manual Sync (Production)
-        Auto Sync (Staging)
-```
 
-### Multi-Environment Strategy
+## Key Services
 
-| Environment | Branch | Sync Policy | Purpose |
-|-------------|--------|-------------|---------|
-| Production | `main` | Manual | Stable infrastructure services |
-| Staging | `staging` | Automated | Testing and validation |
+- **Identity & Access:** Authentik (SSO/OAuth provider)
+- **Monitoring:** Prometheus, Grafana, Loki, Promtail, Velero backup alerts
+- **Backups:** Velero with MinIO/NAS storage
+- **Security:** Kyverno policy engine, network policies, RBAC, cert-manager (Let's Encrypt)
+- **Applications:** Homepage dashboard, Goldilocks resource advisor
+- **Infrastructure:** ArgoCD, MetalLB, NGINX Ingress, NFS storage
 
-### App-of-Apps Pattern
+## Usage
 
-Bootstrap applications deploy environment-specific workloads:
-
-```yaml
-# argocd/bootstrap/production.yaml
-# Deploys all apps defined in argocd/apps/production/
-```
-
-## Key Design Decisions
-
-**Helm Chart Wrapper Pattern**
-- Charts in `charts/applications/` wrap upstream charts as dependencies
-- Allows customization while maintaining upgrade path
-- Environment-specific values via ArgoCD application specs
-
-**Inline Value Overrides**
-- ArgoCD applications contain environment-specific values inline
-- No separate values files per environment
-- Cleaner repository structure
-
-**Infrastructure as Applications**
-- Network policies, RBAC, and security configs deployed as Helm charts
-- Versioned and auditable security posture
-- Consistent deployment pattern for all resources
-
-## Deployment
-
-### Prerequisites
-
-- Kubernetes cluster (k3s)
-- ArgoCD installed
-- kubectl configured
-
-### Bootstrap
+This repository is designed for ArgoCD consumption. Changes are deployed via Git:
 
 ```bash
-# Production environment
-kubectl apply -f argocd/bootstrap/production.yaml
+# Deploy to staging
+git checkout staging && git push origin staging
 
-# Staging environment
-kubectl apply -f argocd/bootstrap/staging.yaml
+# Promote to production
+git checkout main && git merge staging && git push origin main
 ```
 
-### Adding Applications
+## Technology Stack
 
-1. Create Helm chart in `charts/applications/<app-name>/`
-2. Add ArgoCD application in `argocd/apps/<environment>/<app-name>.yaml`
-3. Commit and push
-4. Sync via ArgoCD (automatic for staging, manual for production)
-
-## Configuration Patterns
-
-### Resource Management
-
-All applications define resource requests and limits:
-
-```yaml
-resources:
-  requests:
-    cpu: "100m"
-    memory: "128Mi"
-  limits:
-    cpu: "500m"
-    memory: "256Mi"
-```
-
-### Storage Classes
-
-| Class | Provider | Use Case |
-|-------|----------|----------|
-| `local-path` | k3s default | High-performance local storage |
-| `nfs-client` | Synology NAS | Shared persistent storage |
-| `nfs-logs` | Synology NAS | Log aggregation storage |
-
-### Ingress
-
-All services use NGINX ingress with environment-specific domains:
-- Production: `<service>.lab1830.com`
-- Staging: `<service>-staging.lab1830.com`
-
-## Security
-
-- **Secrets**: HashiCorp Vault with Kubernetes auth
-- **Network**: Default-deny policies with explicit allow rules
-- **Pods**: Baseline pod security standards enforced
-- **RBAC**: Least-privilege service accounts
-
-## Related Repositories
-
-- [lab1830-infrastructure](https://github.com/brianjlehnen/lab1830-infrastructure) - Terraform and Ansible automation
-
-## License
-
-MIT License - See [LICENSE](LICENSE) for details.
+- Kubernetes (k3s)
+- ArgoCD
+- Helm
+- SOPS + Age (secrets encryption)
+- MetalLB
+- NGINX Ingress
+- cert-manager (Let's Encrypt via Cloudflare DNS-01)
+- Kyverno
+- Authentik
+- Prometheus / Grafana / Loki
+- Velero

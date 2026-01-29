@@ -80,3 +80,163 @@ networkPolicies:
         policyTypes:
           - Ingress
           - Egress
+
+  authentik:
+    namespace: authentik-production
+    enabled: false  # Enable in production ArgoCD app
+    policies:
+      - name: authentik-network-policy
+        podSelector: {}
+        ingress:
+          # Allow ingress controller access
+          - from:
+            - namespaceSelector:
+                matchLabels:
+                  name: ingress-nginx
+            ports:
+              - protocol: TCP
+                port: 9000
+              - protocol: TCP
+                port: 9443
+          # Allow internal pod communication
+          - from:
+            - podSelector: {}
+            ports:
+              - protocol: TCP
+                port: 9000
+              - protocol: TCP
+                port: 6379
+              - protocol: TCP
+                port: 5432
+        egress:
+          # DNS resolution
+          - to: []
+            ports:
+              - protocol: UDP
+                port: 53
+              - protocol: TCP
+                port: 53
+          # HTTPS for OAuth providers and outbound connections
+          - to: []
+            ports:
+              - protocol: TCP
+                port: 443
+          # Internal pod communication
+          - to:
+            - podSelector: {}
+            ports:
+              - protocol: TCP
+                port: 6379
+              - protocol: TCP
+                port: 5432
+              - protocol: TCP
+                port: 9000
+
+  certManager:
+    namespace: cert-manager
+    enabled: false  # Enable in production ArgoCD app
+    policies:
+      - name: cert-manager-network-policy
+        podSelector: {}
+        ingress:
+          # Allow webhook calls from API server
+          - from: []
+            ports:
+              - protocol: TCP
+                port: 10250
+        egress:
+          # DNS resolution
+          - to: []
+            ports:
+              - protocol: UDP
+                port: 53
+              - protocol: TCP
+                port: 53
+          # HTTPS for Let's Encrypt ACME and Cloudflare API
+          - to: []
+            ports:
+              - protocol: TCP
+                port: 443
+          # Kubernetes API
+          - to: []
+            ports:
+              - protocol: TCP
+                port: 6443
+
+  velero:
+    namespace: velero
+    enabled: false  # Enable in production ArgoCD app
+    policies:
+      - name: velero-network-policy
+        podSelector: {}
+        ingress:
+          # Allow Prometheus scraping
+          - from:
+            - namespaceSelector:
+                matchLabels:
+                  name: monitoring-production
+            ports:
+              - protocol: TCP
+                port: 8085
+        egress:
+          # DNS resolution
+          - to: []
+            ports:
+              - protocol: UDP
+                port: 53
+              - protocol: TCP
+                port: 53
+          # MinIO/S3 on NAS
+          - to:
+            - ipBlock:
+                cidr: "192.168.4.159/32"
+            ports:
+              - protocol: TCP
+                port: 9000
+              - protocol: TCP
+                port: 9001
+          # Kubernetes API for backup operations
+          - to: []
+            ports:
+              - protocol: TCP
+                port: 6443
+          # NFS for volume backups
+          - to:
+            - ipBlock:
+                cidr: "192.168.4.159/32"
+            ports:
+              - protocol: TCP
+                port: 2049
+
+  kyverno:
+    namespace: kyverno
+    enabled: false  # Enable in production ArgoCD app
+    policies:
+      - name: kyverno-network-policy
+        podSelector: {}
+        ingress:
+          # Allow webhook calls from API server
+          - from: []
+            ports:
+              - protocol: TCP
+                port: 9443
+              - protocol: TCP
+                port: 443
+        egress:
+          # DNS resolution
+          - to: []
+            ports:
+              - protocol: UDP
+                port: 53
+              - protocol: TCP
+                port: 53
+          # Kubernetes API
+          - to: []
+            ports:
+              - protocol: TCP
+                port: 6443
+          # HTTPS for image registry verification
+          - to: []
+            ports:
+              - protocol: TCP
+                port: 443

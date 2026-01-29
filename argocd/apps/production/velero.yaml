@@ -56,7 +56,11 @@ spec:
             release: monitoring-production
           interval: 30s
           scrapeTimeout: 10s
-        
+
+        # PrometheusRule for backup failure alerts
+        prometheusRule:
+          enabled: true
+
         # Bucket auto-creation for production
         bucketInit:
           enabled: true

@@ -1,0 +1,99 @@
+# Wireguard homelab server configuration - Production defaults
+image:
+  repository: ghcr.io/wg-easy/wg-easy
+  tag: "13"
+  pullPolicy: IfNotPresent
+
+# Deployment configuration
+replicaCount: 1
+restartPolicy: Always
+
+# Service configuration
+webUI:
+  service:
+    type: ClusterIP
+    port: 51821
+
+vpn:
+  service:
+    type: LoadBalancer
+    port: 51820
+    protocol: UDP
+
+# Ingress for web UI access
+ingress:
+  enabled: true
+  className: nginx
+  # Base annotations (always present)
+  baseAnnotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  # Cert-manager annotations (can be disabled)
+  certManager:
+    enabled: true
+    clusterIssuer: "letsencrypt-prod"
+  hosts:
+    - host: wireguard.lab1830.com  # Production hostname
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: wireguard-tls
+      hosts:
+        - wireguard.lab1830.com
+
+# Production resources
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Wireguard configuration
+wireguard:
+  # External endpoint (production)
+  serverUrl: "wireguard.lab1830.com:51820"
+  # Subnet for VPN clients
+  subnet: "10.8.0.1"
+  # Allowed IPs for clients (homelab access)
+  allowedIPs: "192.168.4.0/22, 10.8.0.0/24"
+  # DNS servers for clients
+  dns: "192.168.4.254"
+  # Web UI password - MUST be overridden in production!
+  # Create secret: kubectl create secret generic wireguard-ui-secret -n wireguard --from-literal=password=<secure-password>
+  password: "CHANGE_ME_IN_ARGOCD_VALUES"
+
+# Persistent storage for configuration
+persistence:
+  enabled: true
+  storageClass: "nfs-client"
+  accessMode: ReadWriteOnce
+  size: 1Gi
+
+# Security context
+# Security context for container (staging-compatible)
+securityContext:
+  capabilities:
+    add:
+      - NET_ADMIN
+  # Removed sysctls and privileged for staging compatibility
+# Production node preference
+affinity:
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      preference:
+        matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - k8s-node2  # Prefer high-memory node
+
+# Network policy
+networkPolicy:
+  enabled: true
+  allowAll: true  # VPN needs broad network access
+
+nodeSelector: {}
+tolerations: []

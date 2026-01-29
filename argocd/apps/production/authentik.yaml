@@ -7,6 +7,12 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name: authentik-production-postgresql
+      jsonPointers:
+        - /data
   source:
     repoURL: git@github.com:brianjlehnen/homelab-gitops.git
     targetRevision: main
@@ -45,6 +51,8 @@ spec:
             ingress:
               enabled: true
               ingressClassName: nginx
+              annotations:
+                cert-manager.io/cluster-issuer: "letsencrypt-prod"
               hosts:
                 - auth.lab1830.com
               tls:
@@ -103,7 +111,7 @@ spec:
                 storageClass: local-path
   destination:
     server: https://kubernetes.default.svc
-    namespace: authentik
+    namespace: authentik-production
   syncPolicy:
     syncOptions:
       - CreateNamespace=true

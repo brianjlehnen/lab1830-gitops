@@ -18,7 +18,7 @@ spec:
         # Production Promtail configuration
         config:
           clients:
-            - url: http://loki-gateway.logging.svc.cluster.local/loki/api/v1/push
+            - url: http://loki-gateway.logging-production.svc.cluster.local/loki/api/v1/push
               external_labels:
                 cluster: homelab
                 environment: production
@@ -135,7 +135,7 @@ spec:
         # ServiceMonitor for Prometheus monitoring
         serviceMonitor:
           enabled: true
-          namespace: logging
+          namespace: logging-production
           labels:
             app: promtail
           interval: 30s
@@ -193,7 +193,7 @@ spec:
         priorityClassName: system-node-critical
   destination:
     server: https://kubernetes.default.svc
-    namespace: logging
+    namespace: logging-production
   syncPolicy:
     automated:
       prune: false

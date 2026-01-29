@@ -20,6 +20,13 @@ spec:
       containers:
       - name: create-bucket
         image: minio/mc:{{ .Values.bucketInit.mcVersion | default "latest" }}
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
         env:
         - name: MC_HOST_minio
           value: "http://{{ .Values.bucketInit.credentials.accessKeyId }}:{{ .Values.bucketInit.credentials.secretAccessKey }}@{{ .Values.bucketInit.minioService }}:{{ .Values.bucketInit.minioPort }}"

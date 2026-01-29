@@ -1,0 +1,58 @@
+{{- if .Values.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: velero-backup-alerts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: velero
+    release: {{ .Release.Name }}
+spec:
+  groups:
+    - name: velero-backup-alerts
+      rules:
+        - alert: VeleroBackupFailed
+          expr: increase(velero_backup_failure_total[24h]) > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Velero backup failed"
+            description: "A Velero backup has failed in the last 24 hours. Check the velero logs for details."
+
+        - alert: VeleroBackupPartiallyFailed
+          expr: increase(velero_backup_partial_failure_total[24h]) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Velero backup partially failed"
+            description: "A Velero backup has partially failed in the last 24 hours. Some items may not have been backed up."
+
+        - alert: VeleroNoRecentBackup
+          expr: (time() - velero_backup_last_successful_timestamp) > 86400
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "No successful Velero backup in 24 hours"
+            description: "No successful Velero backup has completed in the last 24 hours for schedule {{ "{{" }} $labels.schedule {{ "}}" }}."
+
+        - alert: VeleroBackupDeletionFailed
+          expr: increase(velero_backup_deletion_failure_total[24h]) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Velero backup deletion failed"
+            description: "A Velero backup deletion has failed. Old backups may not be cleaned up properly."
+
+        - alert: VeleroRestoreFailed
+          expr: increase(velero_restore_failed_total[1h]) > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Velero restore failed"
+            description: "A Velero restore operation has failed. Check the velero logs for details."
+{{- end }}
