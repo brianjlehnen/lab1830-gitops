@@ -27,6 +27,32 @@ spec:
           limits:
             cpu: 100m
             memory: 64Mi
+        {{- if .Values.bucketInit.credentials.existingSecret }}
+        env:
+        - name: MINIO_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.bucketInit.credentials.existingSecret }}
+              key: {{ .Values.bucketInit.credentials.accessKeyKey | default "accessKey" }}
+        - name: MINIO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.bucketInit.credentials.existingSecret }}
+              key: {{ .Values.bucketInit.credentials.secretKeyKey | default "secretKey" }}
+        command:
+        - /bin/sh
+        - -c
+        - |
+          export MC_HOST_minio="http://${MINIO_ACCESS_KEY}:${MINIO_SECRET_KEY}@{{ .Values.bucketInit.minioService }}:{{ .Values.bucketInit.minioPort }}"
+          echo "Waiting for MinIO to be ready..."
+          until mc admin info minio > /dev/null 2>&1; do
+            echo "MinIO not ready, waiting..."
+            sleep 5
+          done
+          echo "MinIO is ready, creating bucket..."
+          mc mb --ignore-existing minio/{{ .Values.bucketName }}
+          echo "Bucket {{ .Values.bucketName }} created successfully"
+        {{- else }}
         env:
         - name: MC_HOST_minio
           value: "http://{{ .Values.bucketInit.credentials.accessKeyId }}:{{ .Values.bucketInit.credentials.secretAccessKey }}@{{ .Values.bucketInit.minioService }}:{{ .Values.bucketInit.minioPort }}"
@@ -42,4 +68,5 @@ spec:
           echo "MinIO is ready, creating bucket..."
           mc mb --ignore-existing minio/{{ .Values.bucketName }}
           echo "Bucket {{ .Values.bucketName }} created successfully"
+        {{- end }}
 {{- end }}

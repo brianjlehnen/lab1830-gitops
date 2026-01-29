@@ -29,9 +29,23 @@ spec:
           - ":9001"
         env:
           - name: MINIO_ROOT_USER
+            {{- if .Values.nfsGateway.credentials.existingSecret }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.nfsGateway.credentials.existingSecret }}
+                key: {{ .Values.nfsGateway.credentials.accessKeyKey | default "accessKey" }}
+            {{- else }}
             value: {{ .Values.nfsGateway.credentials.accessKey | quote }}
+            {{- end }}
           - name: MINIO_ROOT_PASSWORD
+            {{- if .Values.nfsGateway.credentials.existingSecret }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.nfsGateway.credentials.existingSecret }}
+                key: {{ .Values.nfsGateway.credentials.secretKeyKey | default "secretKey" }}
+            {{- else }}
             value: {{ .Values.nfsGateway.credentials.secretKey | quote }}
+            {{- end }}
         ports:
           - name: api
             containerPort: 9000
