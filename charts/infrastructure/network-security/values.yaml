@@ -222,6 +222,11 @@ networkPolicies:
                 port: 9443
               - protocol: TCP
                 port: 443
+          # Allow ingress to policy-reporter UI
+          - from: []
+            ports:
+              - protocol: TCP
+                port: 8080
         egress:
           # DNS resolution
           - to: []
