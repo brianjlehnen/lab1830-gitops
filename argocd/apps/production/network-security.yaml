@@ -36,6 +36,14 @@ spec:
             enabled: true
           applications:
             enabled: true
+          authentik:
+            enabled: true
+          certManager:
+            enabled: true
+          velero:
+            enabled: true
+          kyverno:
+            enabled: true
   
   destination:
     server: https://kubernetes.default.svc

@@ -83,7 +83,7 @@ networkPolicies:
 
   authentik:
     namespace: authentik-production
-    enabled: true
+    enabled: false  # Enable in production ArgoCD app
     policies:
       - name: authentik-network-policy
         podSelector: {}
@@ -134,7 +134,7 @@ networkPolicies:
 
   certManager:
     namespace: cert-manager
-    enabled: true
+    enabled: false  # Enable in production ArgoCD app
     policies:
       - name: cert-manager-network-policy
         podSelector: {}
@@ -165,7 +165,7 @@ networkPolicies:
 
   velero:
     namespace: velero
-    enabled: true
+    enabled: false  # Enable in production ArgoCD app
     policies:
       - name: velero-network-policy
         podSelector: {}
@@ -210,7 +210,7 @@ networkPolicies:
 
   kyverno:
     namespace: kyverno
-    enabled: true
+    enabled: false  # Enable in production ArgoCD app
     policies:
       - name: kyverno-network-policy
         podSelector: {}
