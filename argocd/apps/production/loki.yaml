@@ -42,11 +42,11 @@ spec:
           replicas: 1
           resources:
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 50m
+              memory: 550Mi
             limits:
-              cpu: 500m
-              memory: 512Mi
+              cpu: 200m
+              memory: 768Mi
           persistence:
             enabled: true
             size: 10Gi

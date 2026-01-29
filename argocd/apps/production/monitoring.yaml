@@ -51,6 +51,13 @@ spec:
               GF_AUTH_GENERIC_OAUTH_TOKEN_URL: "https://auth.lab1830.com/application/o/token/"
               GF_AUTH_GENERIC_OAUTH_API_URL: "https://auth.lab1830.com/application/o/userinfo/"
               GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH: "contains(groups[*], 'authentik Admins') && 'Admin' || 'Viewer'"
+            resources:
+              requests:
+                cpu: 25m
+                memory: 400Mi
+              limits:
+                cpu: 100m
+                memory: 512Mi
             grafana.ini:
               server:
                 root_url: "https://grafana.lab1830.com"
