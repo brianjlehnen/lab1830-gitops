@@ -105,6 +105,58 @@ spec:
                     resources:
                       requests:
                         storage: 10Gi
+              secrets:
+                - alertmanager-smtp-secret
+            config:
+              global:
+                resolve_timeout: 5m
+                smtp_from: "blehnen@gmail.com"
+                smtp_smarthost: "smtp.gmail.com:587"
+                smtp_auth_username: "blehnen@gmail.com"
+                smtp_auth_password_file: "/etc/alertmanager/secrets/alertmanager-smtp-secret/smtp-password"
+                smtp_require_tls: true
+              inhibit_rules:
+                - source_matchers:
+                    - 'severity = critical'
+                  target_matchers:
+                    - 'severity =~ warning|info'
+                  equal: ['namespace', 'alertname']
+                - source_matchers:
+                    - 'severity = warning'
+                  target_matchers:
+                    - 'severity = info'
+                  equal: ['namespace', 'alertname']
+                - source_matchers:
+                    - 'alertname = InfoInhibitor'
+                  target_matchers:
+                    - 'severity = info'
+                  equal: ['namespace']
+                - target_matchers:
+                    - 'alertname = InfoInhibitor'
+              route:
+                group_by: ['namespace', 'alertname']
+                group_wait: 30s
+                group_interval: 5m
+                repeat_interval: 4h
+                receiver: 'email-brian'
+                routes:
+                  - receiver: 'null'
+                    matchers:
+                      - alertname = "Watchdog"
+                  - receiver: 'email-brian'
+                    matchers:
+                      - severity =~ "critical|warning"
+                    continue: true
+              receivers:
+                - name: 'null'
+                - name: 'email-brian'
+                  email_configs:
+                    - to: 'brian@lab1830.com'
+                      send_resolved: true
+                      headers:
+                        subject: '{{ printf "[Lab1830] {{ .Status | toUpper }}: {{ .CommonLabels.alertname }}" }}'
+              templates:
+                - '/etc/alertmanager/config/*.tmpl'
           kubeStateMetrics:
             resources:
               requests:
