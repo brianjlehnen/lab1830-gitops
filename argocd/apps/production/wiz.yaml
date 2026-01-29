@@ -30,8 +30,10 @@ spec:
 
           wiz-kubernetes-connector:
             autoCreateConnector:
-              clusterFlavor: Kubernetes
-              connectorName: "lehnen-lab1830"
+              enabled: false
+            wizConnector:
+              autoCreated: false
+              connectorId: "4c6c1316-da5b-58a5-b0ea-cd1a9e53150e"
             wiz-broker:
               enabled: true
               resources:
