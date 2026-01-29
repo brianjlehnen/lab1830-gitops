@@ -62,17 +62,14 @@ spec:
           enabled: true
 
         # Bucket auto-creation for production
-        # TODO: Replace with secure credentials from velero-minio-credentials secret
-        # Create secret with: kubectl create secret generic velero-minio-credentials -n velero \
-        #   --from-literal=accessKey=<secure-key> --from-literal=secretKey=<secure-secret>
         bucketInit:
           enabled: true
           bucketName: "velero-backups"
           minioService: "nfs-gateway"
           minioPort: 9000
           credentials:
-            accessKeyId: "velero-prod"
-            secretAccessKey: "CHANGE_ME_USE_EXTERNAL_SECRET"
+            accessKeyId: "velero"
+            secretAccessKey: "velero123"
         
         # Production-specific settings
         nodeAgent:
