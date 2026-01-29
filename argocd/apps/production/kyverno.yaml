@@ -19,11 +19,17 @@ spec:
         policy-reporter:
           ui:
             ingress:
+              annotations:
+                cert-manager.io/cluster-issuer: "letsencrypt-prod"
               hosts:
                 - host: kyverno.lab1830.com
                   paths:
                     - path: /
                       pathType: Prefix
+              tls:
+                - hosts:
+                    - kyverno.lab1830.com
+                  secretName: kyverno-production-tls
   destination:
     server: https://kubernetes.default.svc
     namespace: kyverno
