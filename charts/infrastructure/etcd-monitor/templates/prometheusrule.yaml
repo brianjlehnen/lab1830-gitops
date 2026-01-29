@@ -1,0 +1,25 @@
+{{- if .Values.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: etcd-snapshot-monitor
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "etcd-monitor.labels" . | nindent 4 }}
+    {{- with .Values.prometheusRule.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+    - name: etcd-snapshots
+      rules:
+        - alert: EtcdSnapshotStale
+          expr: |
+            kube_job_status_failed{namespace="{{ .Release.Namespace }}", job_name=~"etcd-snapshot-monitor.*"} > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "etcd snapshot is stale or missing"
+            description: "The etcd snapshot monitor job has failed, indicating snapshots are older than {{ .Values.maxAgeHours }}h or missing."
+{{- end }}

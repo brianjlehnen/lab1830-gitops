@@ -1,0 +1,9 @@
+schedule: "0 */6 * * *"
+snapshotDir: /var/lib/rancher/k3s/server/db/snapshots
+maxAgeHours: 24
+controlPlaneNodeSelector:
+  node-role.kubernetes.io/master: "true"
+
+prometheusRule:
+  enabled: false
+  additionalLabels: {}

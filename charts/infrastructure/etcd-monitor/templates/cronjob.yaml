@@ -1,0 +1,79 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: etcd-snapshot-monitor
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "etcd-monitor.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        metadata:
+          labels:
+            {{- include "etcd-monitor.labels" . | nindent 12 }}
+        spec:
+          restartPolicy: Never
+          nodeSelector:
+            {{- toYaml .Values.controlPlaneNodeSelector | nindent 12 }}
+          tolerations:
+            - key: node-role.kubernetes.io/master
+              effect: NoSchedule
+            - key: node-role.kubernetes.io/control-plane
+              effect: NoSchedule
+          containers:
+            - name: check-snapshots
+              image: busybox:1.36
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  MAX_AGE_SECONDS=$(({{ .Values.maxAgeHours }} * 3600))
+                  NOW=$(date +%s)
+                  SNAPSHOT_DIR="{{ .Values.snapshotDir }}"
+
+                  if [ ! -d "$SNAPSHOT_DIR" ]; then
+                    echo "ERROR: Snapshot directory $SNAPSHOT_DIR does not exist"
+                    exit 1
+                  fi
+
+                  LATEST=$(ls -t "$SNAPSHOT_DIR"/*.db 2>/dev/null | head -1)
+                  if [ -z "$LATEST" ]; then
+                    echo "ERROR: No etcd snapshots found in $SNAPSHOT_DIR"
+                    exit 1
+                  fi
+
+                  # Get file modification time
+                  SNAP_TIME=$(stat -c %Y "$LATEST" 2>/dev/null || stat -f %m "$LATEST" 2>/dev/null)
+                  AGE=$((NOW - SNAP_TIME))
+                  AGE_HOURS=$((AGE / 3600))
+
+                  echo "Latest snapshot: $(basename $LATEST)"
+                  echo "Age: ${AGE_HOURS}h (max: {{ .Values.maxAgeHours }}h)"
+
+                  if [ "$AGE" -gt "$MAX_AGE_SECONDS" ]; then
+                    echo "STALE: Snapshot is ${AGE_HOURS}h old (threshold: {{ .Values.maxAgeHours }}h)"
+                    exit 1
+                  fi
+
+                  echo "OK: Snapshot is fresh"
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 16Mi
+                limits:
+                  cpu: 50m
+                  memory: 32Mi
+              volumeMounts:
+                - name: snapshots
+                  mountPath: {{ .Values.snapshotDir }}
+                  readOnly: true
+          volumes:
+            - name: snapshots
+              hostPath:
+                path: {{ .Values.snapshotDir }}
+                type: DirectoryOrCreate
