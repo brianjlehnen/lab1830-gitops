@@ -7,6 +7,12 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name: authentik-production-postgresql
+      jsonPointers:
+        - /data
   source:
     repoURL: git@github.com:brianjlehnen/homelab-gitops.git
     targetRevision: main
