@@ -2,7 +2,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  name: etcd-snapshot-monitor
+  name: k3s-backup-monitor
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "etcd-monitor.labels" . | nindent 4 }}
@@ -11,15 +11,15 @@ metadata:
     {{- end }}
 spec:
   groups:
-    - name: etcd-snapshots
+    - name: k3s-backups
       rules:
-        - alert: EtcdSnapshotStale
+        - alert: K3sBackupStale
           expr: |
-            kube_job_status_failed{namespace="{{ .Release.Namespace }}", job_name=~"etcd-snapshot-monitor.*"} > 0
+            kube_job_status_failed{namespace="{{ .Release.Namespace }}", job_name=~"k3s-backup.*"} > 0
           for: 5m
           labels:
             severity: critical
           annotations:
-            summary: "etcd snapshot is stale or missing"
-            description: "The etcd snapshot monitor job has failed, indicating snapshots are older than {{ .Values.maxAgeHours }}h or missing."
+            summary: "k3s state backup is stale or failed"
+            description: "The k3s backup CronJob has failed, indicating the SQLite state backup is older than {{ .Values.maxAgeHours }}h or the backup process failed."
 {{- end }}

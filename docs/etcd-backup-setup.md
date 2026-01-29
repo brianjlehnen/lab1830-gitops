@@ -1,8 +1,17 @@
-# etcd Backup Configuration (k3s)
+# k3s State Backup Configuration
 
-k3s uses an embedded etcd cluster for state storage. Snapshots are configured at the host level on the control plane node, not through Kubernetes manifests.
+This k3s cluster uses SQLite (the default single-server datastore), not embedded etcd. The cluster state is stored at `/var/lib/rancher/k3s/server/db/state.db` on the control plane node.
 
-## Configure Automatic Snapshots
+## Automatic Backups
+
+A `k3s-backup` CronJob runs in `kube-system` every 6 hours. It:
+1. Copies `state.db` to a timestamped backup in `/var/lib/rancher/k3s/server/db/backups/`
+2. Prunes backups older than 7 days
+3. Verifies the latest backup is fresh (exits non-zero if stale)
+
+The CronJob is deployed via ArgoCD from `charts/infrastructure/etcd-monitor/`.
+
+## Manual Backup
 
 SSH to the control plane node:
 
@@ -10,40 +19,13 @@ SSH to the control plane node:
 ssh k8s-control  # 192.168.4.250
 ```
 
-Edit the k3s config:
-
 ```bash
-sudo nano /etc/rancher/k3s/config.yaml
+sudo mkdir -p /var/lib/rancher/k3s/server/db/backups
+sudo cp /var/lib/rancher/k3s/server/db/state.db \
+  /var/lib/rancher/k3s/server/db/backups/state-$(date +%Y%m%d-%H%M%S).db
 ```
 
-Add or update the etcd snapshot settings:
-
-```yaml
-etcd-snapshot-schedule-cron: "0 */6 * * *"   # Every 6 hours
-etcd-snapshot-retention: 10                    # Keep last 10 snapshots
-etcd-snapshot-dir: /var/lib/rancher/k3s/server/db/snapshots
-```
-
-Restart k3s:
-
-```bash
-sudo systemctl restart k3s
-```
-
-## Verify Snapshots
-
-```bash
-# List snapshots
-sudo k3s etcd-snapshot list
-
-# Take a manual snapshot
-sudo k3s etcd-snapshot save --name manual-backup
-
-# Snapshots are stored at:
-ls /var/lib/rancher/k3s/server/db/snapshots/
-```
-
-## Restore from Snapshot
+## Restore from Backup
 
 **WARNING**: This is a destructive operation. All cluster state will be replaced.
 
@@ -51,19 +33,36 @@ ls /var/lib/rancher/k3s/server/db/snapshots/
 # Stop k3s
 sudo systemctl stop k3s
 
-# Restore from snapshot
-sudo k3s server --cluster-reset --cluster-reset-restore-path=/var/lib/rancher/k3s/server/db/snapshots/<snapshot-name>
+# Replace state.db with backup
+sudo cp /var/lib/rancher/k3s/server/db/backups/<backup-file>.db \
+  /var/lib/rancher/k3s/server/db/state.db
 
 # Start k3s
 sudo systemctl start k3s
 
-# Rejoin worker nodes (they will need to be restarted)
+# Worker nodes may need restart
 # On each worker node:
 sudo systemctl restart k3s-agent
 ```
 
+## Switching to Embedded etcd (Optional)
+
+If you later want HA with multiple control plane nodes, you can migrate to embedded etcd:
+
+```bash
+# Stop k3s on all nodes
+sudo systemctl stop k3s
+
+# Reinitialize with etcd
+sudo k3s server --cluster-init
+
+# Then etcd snapshot commands become available:
+sudo k3s etcd-snapshot list
+sudo k3s etcd-snapshot save --name manual-backup
+```
+
+This requires reconfiguring all worker nodes to rejoin.
+
 ## Monitoring
 
-An `etcd-snapshot-monitor` CronJob runs in `kube-system` and checks snapshot freshness. If the most recent snapshot is older than 24 hours, the job exits with a non-zero status (visible as Failed pod in monitoring).
-
-The companion PrometheusRule fires `EtcdSnapshotStale` if the monitor job fails, routing an alert through AlertManager.
+A PrometheusRule fires `K3sBackupStale` if the backup CronJob fails, routing an alert through AlertManager to brian@lab1830.com.

@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: etcd-snapshot-monitor
+  name: k3s-backup
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "etcd-monitor.labels" . | nindent 4 }}
@@ -26,41 +26,53 @@ spec:
             - key: node-role.kubernetes.io/control-plane
               effect: NoSchedule
           containers:
-            - name: check-snapshots
+            - name: backup-and-check
               image: busybox:1.36
               command:
                 - /bin/sh
                 - -c
                 - |
+                  set -e
+                  STATE_DB="{{ .Values.stateDbPath }}/state.db"
+                  BACKUP_DIR="{{ .Values.backupDir }}"
                   MAX_AGE_SECONDS=$(({{ .Values.maxAgeHours }} * 3600))
+                  RETENTION_DAYS={{ .Values.retentionDays }}
                   NOW=$(date +%s)
-                  SNAPSHOT_DIR="{{ .Values.snapshotDir }}"
 
-                  if [ ! -d "$SNAPSHOT_DIR" ]; then
-                    echo "ERROR: Snapshot directory $SNAPSHOT_DIR does not exist"
+                  # Verify state.db exists
+                  if [ ! -f "$STATE_DB" ]; then
+                    echo "ERROR: k3s state database not found at $STATE_DB"
                     exit 1
                   fi
 
-                  LATEST=$(ls -t "$SNAPSHOT_DIR"/*.db 2>/dev/null | head -1)
-                  if [ -z "$LATEST" ]; then
-                    echo "ERROR: No etcd snapshots found in $SNAPSHOT_DIR"
-                    exit 1
-                  fi
+                  # Create backup directory
+                  mkdir -p "$BACKUP_DIR"
 
-                  # Get file modification time
-                  SNAP_TIME=$(stat -c %Y "$LATEST" 2>/dev/null || stat -f %m "$LATEST" 2>/dev/null)
+                  # Copy state.db with timestamp
+                  TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+                  BACKUP_FILE="$BACKUP_DIR/state-${TIMESTAMP}.db"
+                  cp "$STATE_DB" "$BACKUP_FILE"
+                  echo "Backup created: $(basename $BACKUP_FILE) ($(du -h "$BACKUP_FILE" | cut -f1))"
+
+                  # Prune old backups
+                  find "$BACKUP_DIR" -name "state-*.db" -mtime +${RETENTION_DAYS} -delete 2>/dev/null
+                  BACKUP_COUNT=$(ls "$BACKUP_DIR"/state-*.db 2>/dev/null | wc -l)
+                  echo "Backups retained: $BACKUP_COUNT"
+
+                  # Verify freshness of latest backup
+                  LATEST=$(ls -t "$BACKUP_DIR"/state-*.db 2>/dev/null | head -1)
+                  SNAP_TIME=$(stat -c %Y "$LATEST")
                   AGE=$((NOW - SNAP_TIME))
                   AGE_HOURS=$((AGE / 3600))
 
-                  echo "Latest snapshot: $(basename $LATEST)"
-                  echo "Age: ${AGE_HOURS}h (max: {{ .Values.maxAgeHours }}h)"
+                  echo "Latest backup age: ${AGE_HOURS}h (max: {{ .Values.maxAgeHours }}h)"
 
                   if [ "$AGE" -gt "$MAX_AGE_SECONDS" ]; then
-                    echo "STALE: Snapshot is ${AGE_HOURS}h old (threshold: {{ .Values.maxAgeHours }}h)"
+                    echo "STALE: Backup is ${AGE_HOURS}h old"
                     exit 1
                   fi
 
-                  echo "OK: Snapshot is fresh"
+                  echo "OK: Backup is fresh"
               resources:
                 requests:
                   cpu: 10m
@@ -69,11 +81,10 @@ spec:
                   cpu: 50m
                   memory: 32Mi
               volumeMounts:
-                - name: snapshots
-                  mountPath: {{ .Values.snapshotDir }}
-                  readOnly: true
+                - name: k3s-db
+                  mountPath: {{ .Values.stateDbPath }}
           volumes:
-            - name: snapshots
+            - name: k3s-db
               hostPath:
-                path: {{ .Values.snapshotDir }}
-                type: DirectoryOrCreate
+                path: {{ .Values.stateDbPath }}
+                type: Directory
