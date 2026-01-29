@@ -8,55 +8,79 @@ This repository contains Helm charts and ArgoCD applications for managing a hybr
 
 ## Architecture
 
-- **Platform:** k3s Kubernetes clusters
-- **GitOps:** ArgoCD with manual sync policies
-- **Secrets:** HashiCorp Vault
-- **Environments:** Production, Staging, Edge clusters
- 
+- **Platform:** k3s Kubernetes clusters (production + staging)
+- **GitOps:** ArgoCD with App-of-Apps pattern
+- **Secrets:** SOPS + Age encryption, Kubernetes secrets
+- **Environments:** Production (`main` branch), Staging (`staging` branch), Edge (Raspberry Pi)
+
 ## Repository Structure
 ```bash
 ├── argocd
-│   ├── apps
-│   │   ├── production
-│   │   └── staging
-│   └── bootstrap
-│       ├── production.yaml
-│       └── staging.yaml
+│   ├── apps
+│   │   ├── production          # Production ArgoCD Application definitions
+│   │   └── staging             # Staging ArgoCD Application definitions
+│   └── bootstrap
+│       ├── production.yaml     # Production bootstrap (App-of-Apps root)
+│       └── staging.yaml        # Staging bootstrap (App-of-Apps root)
 ├── charts
-│   ├── applications
-│   │   ├── cert-manager
-│   │   ├── descheduler
-│   │   ├── homepage
-│   │   ├── loki
-│   │   ├── monitoring
-│   │   ├── promtail
-│   │   ├── restic
-│   │   ├── vault
-│   │   ├── velero
-│   │   ├── wireguard
-│   │   └── wiz-connector
-│   └── infrastructure
-│       ├── loki-external
-│       └── storage
-├── README.md
-└── scripts
+│   ├── applications
+│   │   ├── authentik           # SSO/Identity Provider
+│   │   ├── cert-manager        # TLS certificate management
+│   │   ├── descheduler         # Pod rescheduling
+│   │   ├── goldilocks          # Resource recommendations
+│   │   ├── homepage            # Dashboard
+│   │   ├── kyverno             # Policy engine
+│   │   ├── kyverno-policies    # Custom Kyverno policies
+│   │   ├── loki                # Log aggregation
+│   │   ├── monitoring          # Prometheus + Grafana stack
+│   │   ├── promtail            # Log shipping
+│   │   ├── velero              # Cluster backups
+│   │   ├── wireguard           # VPN
+│   │   └── wiz-connector       # Security scanning
+│   └── infrastructure
+│       ├── loki-external       # External Loki access (NodePort)
+│       ├── namespace-labels    # Namespace label management
+│       ├── network-security    # NetworkPolicies
+│       ├── pod-security        # PodDisruptionBudgets
+│       ├── rbac-security       # ClusterRoles and bindings
+│       └── storage             # NFS storage classes
+├── scripts
+│   └── vault-staging-setup.sh
+├── CLAUDE.md                   # Claude Code instructions
+└── README.md
 ```
+
 ## Key Services
 
-- **Infrastructure:** ArgoCD, Prometheus, Grafana, Loki, Vault, Velero, Restic
-- **Applications:** Homepage dashboard, monitoring stack, backup solutions
-- **Security:** HashiCorp Vault secrets management, certificate management
+- **Identity & Access:** Authentik (SSO/OAuth provider)
+- **Monitoring:** Prometheus, Grafana, Loki, Promtail, Velero backup alerts
+- **Backups:** Velero with MinIO/NAS storage
+- **Security:** Kyverno policy engine, network policies, RBAC, cert-manager (Let's Encrypt)
+- **Applications:** Homepage dashboard, Goldilocks resource advisor
+- **Infrastructure:** ArgoCD, MetalLB, NGINX Ingress, NFS storage
 
 ## Usage
 
-This repository is designed for ArgoCD consumption. Applications are deployed through GitOps workflow with environment-specific value overrides.
+This repository is designed for ArgoCD consumption. Changes are deployed via Git:
+
+```bash
+# Deploy to staging
+git checkout staging && git push origin staging
+
+# Promote to production
+git checkout main && git merge staging && git push origin main
+```
 
 ## Technology Stack
 
 - Kubernetes (k3s)
 - ArgoCD
 - Helm
-- HashiCorp Vault
+- SOPS + Age (secrets encryption)
 - MetalLB
 - NGINX Ingress
-- cert-manager
+- cert-manager (Let's Encrypt via Cloudflare DNS-01)
+- Kyverno
+- Authentik
+- Prometheus / Grafana / Loki
+- Velero

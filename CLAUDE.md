@@ -24,7 +24,7 @@ This is a GitOps repository for managing Lab1830 homelab infrastructure using Ar
 
 | IP | Purpose | Services |
 |----|---------|----------|
-| 192.168.4.200 | K8s/MetalLB | ArgoCD, Grafana, Homepage, Vault, Authentik |
+| 192.168.4.200 | K8s/MetalLB | ArgoCD, Grafana, Homepage, Authentik, Kyverno, Goldilocks |
 | 192.168.4.201 | K8s/MetalLB | AdGuard Home DNS service (queries only) |
 | 192.168.4.156 | Docker/Traefik | Plex, Overseerr, Radarr, Sonarr, Prowlarr, SABnzbd |
 | 192.168.4.159 | NAS | Synology storage services |
@@ -35,6 +35,11 @@ This is a GitOps repository for managing Lab1830 homelab infrastructure using Ar
 ```bash
 kp  # Switch to production cluster
 ks  # Switch to staging cluster
+
+# For non-interactive/scripted use:
+# Production: ~/.kube/config (default context)
+# Staging: ~/.kube/config-staging
+KUBECONFIG=~/.kube/config-staging kubectl get pods -A
 ```
 
 ## Key Commands
@@ -91,9 +96,9 @@ sops --decrypt <secret-file>.yaml
 ### Repository Structure
 
 - `argocd/bootstrap/`: Root ArgoCD applications for each environment
-- `argocd/apps/`: Environment-specific application definitions
-- `charts/applications/`: Custom Helm charts for applications
-- `charts/infrastructure/`: Infrastructure component charts
+- `argocd/apps/`: Environment-specific application definitions (production, staging)
+- `charts/applications/`: Helm charts for applications (authentik, homepage, kyverno, monitoring, velero, etc.)
+- `charts/infrastructure/`: Infrastructure component charts (network-security, rbac-security, pod-security, storage, etc.)
 - `scripts/`: Utility scripts for setup and maintenance
 
 ### Environment Strategy
@@ -105,6 +110,7 @@ sops --decrypt <secret-file>.yaml
 
 - Staging: `<app>-staging` (e.g., `homepage-staging`, `monitoring-staging`)
 - Production: `<app>-production` (e.g., `homepage-production`, `monitoring-production`)
+- Exceptions (shared/fixed namespaces): `argocd`, `cert-manager`, `kyverno`, `velero`, `security`, `ingress-nginx`
 
 ### App-of-Apps Pattern
 
@@ -133,9 +139,9 @@ spec:
 ## Certificate Management
 
 ### Internal Services (cert-manager)
-- Self-signed CA for internal Kubernetes services
 - Certificates auto-renew via cert-manager
-- ClusterIssuer: `letsencrypt-prod` available for external certs using Cloudflare DNS-01
+- ClusterIssuer: `letsencrypt-prod` using Cloudflare DNS-01 challenges
+- All production ingresses must include the annotation `cert-manager.io/cluster-issuer: "letsencrypt-prod"` and a `tls` section to get valid Let's Encrypt certificates
 
 ### Let's Encrypt Certificates
 
@@ -204,10 +210,10 @@ sops --decrypt secret.yaml
 kubectl get secret sops-age -n argocd
 ```
 
-### Vault (HashiCorp)
-- 2-node HA cluster with Raft storage
-- Access: https://vault.lab1830.com
-- Requires manual unsealing after pod restarts
+### Vault (HashiCorp) - Staging Only
+- Staging environment only (not deployed in production)
+- Access via SSH tunnel: `http://localhost:8200/ui/`
+- Token: `staging-root-token-12345`
 
 ## Resource Management
 
@@ -220,6 +226,34 @@ kubectl get secret sops-age -n argocd
 - `nfs-client`: Shared persistent storage (Synology NAS)
 - `nfs-logs`: Log aggregation storage
 
+## Security
+
+### Network Policies
+- Managed via `charts/infrastructure/network-security/` Helm chart
+- Production: Network policies enabled for monitoring, argocd, applications, authentik, cert-manager, velero, and kyverno namespaces
+- Staging: Only monitoring, network, and argocd policies enabled
+- New policies should be added with `enabled: false` in base `values.yaml` and enabled per-environment in ArgoCD app values
+
+### RBAC
+- Managed via `charts/infrastructure/rbac-security/`
+- Least-privilege ClusterRoles for Velero backup operations
+
+### Pod Security
+- Managed via `charts/infrastructure/pod-security/`
+- Pod Disruption Budgets enabled for Grafana, Prometheus, Alertmanager, and Homepage in production
+
+### Kyverno Policies
+- Managed via `charts/applications/kyverno-policies/`
+- Staging: `Enforce` mode
+- Production: `Audit` mode
+- Policies include: require resource limits, require labels, etc.
+
+### Authentik (SSO/Identity Provider)
+- Production: `https://auth.lab1830.com` (namespace: `authentik-production`)
+- Staging: `https://auth-staging.lab1830.com` (namespace: `authentik-staging`)
+- Provides OAuth for Grafana and other services
+- Secrets managed via `authentik-secrets` Kubernetes secret (not in Git)
+
 ## Ingress Configuration
 
 All applications use NGINX ingress with environment-specific domains:
@@ -230,10 +264,11 @@ MetalLB LoadBalancer pool: 192.168.4.200-192.168.4.210
 
 ## Monitoring & Logging
 
-- **Grafana**: https://grafana.lab1830.com (kube-prometheus-stack)
+- **Grafana**: https://grafana.lab1830.com (kube-prometheus-stack, namespace: `monitoring-production`)
 - **Prometheus**: Metrics collection (kube-prometheus-stack)
-- **Loki**: Log aggregation (Kubernetes-native cluster)
-- **Promtail**: Log shipping to Loki
+- **Loki**: Log aggregation (namespace: `logging-production`)
+- **Promtail**: Log shipping to Loki (namespace: `logging-production`)
+- **Velero**: Cluster backup to MinIO/NAS with PrometheusRule alerts for backup failures
 
 ```bash
 # Check monitoring stack
@@ -274,3 +309,5 @@ dig @192.168.4.201 argocd.lab1830.com
 - Check application health in ArgoCD UI after deployments
 - ConfigMap changes require pod restart: `kubectl rollout restart deployment <name> -n <namespace>`
 - Kyverno policies: Staging uses `Enforce`, Production uses `Audit` mode
+- All production ingresses need `cert-manager.io/cluster-issuer: "letsencrypt-prod"` annotation for valid TLS
+- Network policies are enabled in production; add new policies as `enabled: false` in base values, enable per-environment
