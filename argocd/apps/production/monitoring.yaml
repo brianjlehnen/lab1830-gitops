@@ -40,7 +40,7 @@ spec:
             env:
               GF_SMTP_ENABLED: "true"
               GF_SMTP_HOST: "smtp.gmail.com:587"
-              GF_SMTP_USER: "brian@saturnvysystems.com"
+              GF_SMTP_USER: "brian@saturnvsystems.com"
               GF_SMTP_FROM_ADDRESS: "brian@lab1830.com"
               GF_SMTP_FROM_NAME: "Lab1830 Grafana Alerts"
               GF_SMTP_STARTTLS_POLICY: "MandatoryStartTLS"
@@ -113,7 +113,7 @@ spec:
                 resolve_timeout: 5m
                 smtp_from: "brian@lab1830.com"
                 smtp_smarthost: "smtp.gmail.com:587"
-                smtp_auth_username: "brian@saturnvysystems.com"
+                smtp_auth_username: "brian@saturnvsystems.com"
                 smtp_auth_password_file: "/etc/alertmanager/secrets/alertmanager-smtp-secret/smtp-password"
                 smtp_require_tls: true
               inhibit_rules:
