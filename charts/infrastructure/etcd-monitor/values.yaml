@@ -4,7 +4,7 @@ backupDir: /var/lib/rancher/k3s/server/db/backups
 maxAgeHours: 24
 retentionDays: 7
 controlPlaneNodeSelector:
-  node-role.kubernetes.io/master: "true"
+  node-role.kubernetes.io/control-plane: "true"
 
 prometheusRule:
   enabled: false
