@@ -69,9 +69,19 @@ spec:
         resultsCache:
           enabled: false
 
-        monitoring:
-          lokiCanary:
-            enabled: false
+        # Sidecar for ruler config (k8s-sidecar)
+        sidecar:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 50m
+              memory: 64Mi
+
+        # Disable canary and test
+        lokiCanary:
+          enabled: false
 
         test:
           enabled: false
