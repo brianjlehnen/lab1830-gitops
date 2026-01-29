@@ -11,24 +11,24 @@ This is a GitOps repository for managing Lab1830 homelab infrastructure using Ar
 ### Physical Infrastructure
 
 **Kubernetes Cluster (k3s v1.32.5+k3s1)**
-- **k8s-control** (192.168.4.250): Dell OptiPlex 990, 8GB RAM, Ubuntu 25.04
-- **k8s-node1** (192.168.4.251): HP EliteDesk 800 G2, 16GB RAM, Ubuntu 25.04
-- **k8s-node2** (192.168.4.252): HP EliteDesk 800 G2, 32GB RAM, Ubuntu 25.04
+- **k8s-control** (192.168.x.250): Dell OptiPlex 990, 8GB RAM, Ubuntu 25.04
+- **k8s-node1** (192.168.x.251): HP EliteDesk 800 G2, 16GB RAM, Ubuntu 25.04
+- **k8s-node2** (192.168.x.252): HP EliteDesk 800 G2, 32GB RAM, Ubuntu 25.04
 
 **External Systems**
-- **titan** (192.168.4.156): Docker host for media services (Plex, *arr stack)
-- **raspberrypi** (192.168.4.254): ARM64 edge cluster - runs AdGuard Home (NOT in main k8s cluster)
-- **Synology NAS** (192.168.4.159): Network storage
+- **titan** (192.168.x.156): Docker host for media services (Plex, *arr stack)
+- **raspberrypi** (192.168.x.254): ARM64 edge cluster - runs AdGuard Home (NOT in main k8s cluster)
+- **Synology NAS** (192.168.x.159): Network storage
 
 ### Service Distribution
 
 | IP | Purpose | Services |
 |----|---------|----------|
-| 192.168.4.200 | K8s/MetalLB | ArgoCD, Grafana, Homepage, Authentik, Kyverno, Goldilocks |
-| 192.168.4.201 | K8s/MetalLB | AdGuard Home DNS service (queries only) |
-| 192.168.4.156 | Docker/Traefik | Plex, Overseerr, Radarr, Sonarr, Prowlarr, SABnzbd |
-| 192.168.4.159 | NAS | Synology storage services |
-| 192.168.4.254 | Raspberry Pi | AdGuard Home web UI and management |
+| 192.168.x.200 | K8s/MetalLB | ArgoCD, Grafana, Homepage, Authentik, Kyverno, Goldilocks |
+| 192.168.x.201 | K8s/MetalLB | AdGuard Home DNS service (queries only) |
+| 192.168.x.156 | Docker/Traefik | Plex, Overseerr, Radarr, Sonarr, Prowlarr, SABnzbd |
+| 192.168.x.159 | NAS | Synology storage services |
+| 192.168.x.254 | Raspberry Pi | AdGuard Home web UI and management |
 
 ### Cluster Context Aliases
 
@@ -158,7 +158,7 @@ kubectl logs -n cert-manager deploy/cert-manager --tail=100
 ```
 
 ### AdGuard Home (Raspberry Pi Edge Cluster)
-- **NOT managed by cert-manager** - runs on separate Pi at 192.168.4.254
+- **NOT managed by cert-manager** - runs on separate Pi at 192.168.x.254
 - Requires manual certificate renewal (~90 days)
 - To renew: Generate cert via production cert-manager, extract, upload via AdGuard UI
 
@@ -260,7 +260,7 @@ All applications use NGINX ingress with environment-specific domains:
 - Staging: `{app}-staging.lab1830.com`
 - Production: `{app}.lab1830.com`
 
-MetalLB LoadBalancer pool: 192.168.4.200-192.168.4.210
+MetalLB LoadBalancer pool: 192.168.x.200-192.168.x.210
 
 ## Monitoring & Logging
 
@@ -296,8 +296,8 @@ argocd app sync <app> --prune
 
 ### DNS Issues (AdGuard)
 ```bash
-dig @192.168.4.201 google.com
-dig @192.168.4.201 argocd.lab1830.com
+dig @192.168.x.201 google.com
+dig @192.168.x.201 argocd.lab1830.com
 ```
 
 ## Important Notes
