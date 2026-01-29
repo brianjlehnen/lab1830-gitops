@@ -1,0 +1,19 @@
+extends: default
+
+rules:
+  line-length:
+    max: 200
+    allow-non-breakable-inline-mappings: true
+  comments:
+    min-spaces-from-content: 1
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no']
+    check-keys: false
+  document-start: disable
+  indentation:
+    spaces: 2
+    indent-sequences: whatever
+
+ignore: |
+  charts/*/Chart.lock
+  **/charts/

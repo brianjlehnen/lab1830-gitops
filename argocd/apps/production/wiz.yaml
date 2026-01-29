@@ -20,19 +20,19 @@ spec:
         # Production-specific overrides
         vault:
           enabled: false  # Vault removed from infrastructure
-        
+
         wiz-kubernetes-integration:
           global:
             wizApiToken:
               secret:
                 create: false
                 name: wiz-api-token # Manual secret creation
-        
+
         wiz-kubernetes-connector:
           autoCreateConnector:
             clusterFlavor: Kubernetes
             connectorName: "lehnen-lab-production"
-        
+
         wiz-broker:
           enabled: true
           resources:
@@ -42,7 +42,7 @@ spec:
             limits:
               cpu: 500m
               memory: 1Gi
-        
+
         wiz-sensor:
           sensorClusterName: "lehnen-wiz-sensor-production"
           resources:
@@ -85,7 +85,7 @@ spec:
                         values:
                           - k8s-control
           priorityClassName: "system-cluster-critical"
-        
+
         wiz-admission-controller:
           enabled: true
           resources:
@@ -98,11 +98,11 @@ spec:
           webhook:
             failurePolicy: Fail # Strict enforcement in production
             timeoutSeconds: 30
-  
+
   destination:
     server: https://kubernetes.default.svc
     namespace: wiz
-  
+
   syncPolicy:
     automated:
       prune: true
@@ -119,5 +119,5 @@ spec:
         duration: 5s
         factor: 2
         maxDuration: 3m
-  
+
   revisionHistoryLimit: 10

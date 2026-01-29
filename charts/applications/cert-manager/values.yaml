@@ -45,6 +45,10 @@ clusterIssuers:
     enabled: false  # Controlled via ArgoCD override
     name: letsencrypt-prod
     email: admin@lab1830.com
+    staging:
+      enabled: false
+    production:
+      enabled: false
     cloudflare:
       enabled: false  # Controlled via ArgoCD override
       secretName: cloudflare-api-token-secret

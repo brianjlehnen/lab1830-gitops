@@ -11,7 +11,7 @@ keywords:
   - kubernetes
 home: https://www.wiz.io
 sources:
-  - git@github.com:brianjlehnen/homelab-gitops.git
+  - https://github.com/brianjlehnen/homelab-gitops
 maintainers:
   - name: brian
     email: brian@lab1830.com

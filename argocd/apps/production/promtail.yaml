@@ -22,7 +22,7 @@ spec:
               external_labels:
                 cluster: homelab
                 environment: production
-          
+
           # Enhanced log scraping configuration
           scrape_configs:
             - job_name: kubernetes-pods
@@ -66,7 +66,7 @@ spec:
                   separator: /
                   source_labels: [__meta_kubernetes_pod_uid, __meta_kubernetes_pod_container_name]
                   target_label: __path__
-            
+
             - job_name: kubernetes-pods-app
               kubernetes_sd_configs:
                 - role: pod
@@ -103,7 +103,7 @@ spec:
                   separator: /
                   source_labels: [__meta_kubernetes_pod_uid, __meta_kubernetes_pod_container_name]
                   target_label: __path__
-        
+
         # Production resource allocation
         resources:
           requests:
@@ -112,7 +112,7 @@ spec:
           limits:
             cpu: 500m
             memory: 256Mi
-        
+
         # Production-grade probes
         readinessProbe:
           httpGet:
@@ -122,7 +122,7 @@ spec:
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
-        
+
         livenessProbe:
           httpGet:
             path: /ready
@@ -131,7 +131,7 @@ spec:
           periodSeconds: 30
           timeoutSeconds: 10
           failureThreshold: 6
-        
+
         # ServiceMonitor for Prometheus monitoring
         serviceMonitor:
           enabled: true
@@ -139,7 +139,7 @@ spec:
           labels:
             app: promtail
           interval: 30s
-        
+
         # Node affinity to ensure coverage across all nodes
         affinity:
           nodeAffinity:
@@ -150,7 +150,7 @@ spec:
                     operator: In
                     values:
                       - linux
-        
+
         # Tolerations for control plane scheduling
         tolerations:
           - key: node-role.kubernetes.io/control-plane
@@ -159,7 +159,7 @@ spec:
           - key: node-role.kubernetes.io/master
             operator: Exists
             effect: NoSchedule
-        
+
         # Enhanced volume mounts for log collection
         extraVolumes:
           - name: docker
@@ -171,7 +171,7 @@ spec:
           - name: journal
             hostPath:
               path: /var/log/journal
-        
+
         extraVolumeMounts:
           - name: docker
             mountPath: /var/lib/docker/containers
@@ -182,13 +182,13 @@ spec:
           - name: journal
             mountPath: /var/log/journal
             readOnly: true
-        
+
         # Security context
         securityContext:
           runAsUser: 0
           runAsGroup: 0
           fsGroup: 0
-        
+
         # Priority class for critical system component
         priorityClassName: system-node-critical
   destination:

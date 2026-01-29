@@ -20,19 +20,19 @@ spec:
         # Staging-specific overrides
         vault:
           enabled: false  # Vault removed from infrastructure
-        
+
         wiz-kubernetes-integration:
           global:
             wizApiToken:
               secret:
                 create: false
                 name: wiz-api-token # Manual secret creation
-        
+
         wiz-kubernetes-connector:
           autoCreateConnector:
             clusterFlavor: Kubernetes
             connectorName: "lehnen-lab-staging-v2"
-        
+
         wiz-broker:
           enabled: true
           resources:
@@ -42,7 +42,7 @@ spec:
             limits:
               cpu: 200m
               memory: 400Mi
-        
+
         wiz-sensor:
           enabled: true
           imagePullSecret:
@@ -80,7 +80,7 @@ spec:
                         operator: NotIn
                         values:
                           - staging-control
-        
+
         wiz-admission-controller:
           enabled: true
           resources:
@@ -93,11 +93,11 @@ spec:
           webhook:
             failurePolicy: Ignore # Permissive in staging
             timeoutSeconds: 10
-  
+
   destination:
     server: https://kubernetes.default.svc
     namespace: wiz
-  
+
   syncPolicy:
     automated:
       prune: true
@@ -114,5 +114,5 @@ spec:
         duration: 5s
         factor: 2
         maxDuration: 3m
-  
+
   revisionHistoryLimit: 10
