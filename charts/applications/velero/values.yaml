@@ -88,7 +88,7 @@ nfsGateway:
   enabled: true
   image:
     repository: minio/minio
-    tag: latest
+    tag: RELEASE.2025-09-07T16-13-09Z
     pullPolicy: IfNotPresent
   credentials:
     accessKey: "velero"

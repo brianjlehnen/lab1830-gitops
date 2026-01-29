@@ -21,7 +21,7 @@ spec:
               hosts:
                 - grafana.lab1830.com
               annotations:
-                cert-manager.io/cluster-issuer: "letsencrypt-prod-gitops"
+                cert-manager.io/cluster-issuer: "letsencrypt-prod"
                 nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
               tls:
                 - secretName: grafana-production-tls

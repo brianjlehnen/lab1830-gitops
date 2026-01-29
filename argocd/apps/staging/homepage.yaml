@@ -19,11 +19,20 @@ spec:
           - name: HOMEPAGE_ALLOWED_HOSTS
             value: "homepage-staging.lab1830.com"
         ingress:
+          enabled: true
+          className: nginx
+          annotations:
+            nginx.ingress.kubernetes.io/ssl-redirect: "true"
+            cert-manager.io/cluster-issuer: "letsencrypt-prod"
           hosts:
             - host: homepage-staging.lab1830.com
               paths:
                 - path: /
                   pathType: Prefix
+          tls:
+            - secretName: homepage-staging-tls
+              hosts:
+                - homepage-staging.lab1830.com
         resources:
           requests:
             cpu: 25m

@@ -1,0 +1,92 @@
+# Authentik SSO Configuration for Lab1830
+authentik:
+  secret_key: "" # Override in ArgoCD app
+  authentik:
+    email:
+      from: "authentik@lab1830.com"
+      host: ""  # Configure if you have SMTP
+      port: 587
+      use_tls: true
+    error_reporting:
+      enabled: false
+  server:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      hosts:
+        - auth.lab1830.com
+      tls:
+        - hosts:
+            - auth.lab1830.com
+          secretName: authentik-tls
+  worker:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 50m
+        memory: 256Mi
+      limits:
+        cpu: 200m
+        memory: 512Mi
+    startupProbe:
+      failureThreshold: 120
+      periodSeconds: 10
+      timeoutSeconds: 30
+      initialDelaySeconds: 60
+    livenessProbe:
+      timeoutSeconds: 30
+      periodSeconds: 30
+    readinessProbe:
+      timeoutSeconds: 30
+      periodSeconds: 30
+  postgresql:
+    enabled: false  # Using subchart instead
+  redis:
+    enabled: false  # Using subchart instead
+
+# PostgreSQL subchart
+postgresql:
+  enabled: true
+  auth:
+    username: authentik
+    password: "" # Override in ArgoCD app
+    database: authentik
+  primary:
+    persistence:
+      enabled: true
+      storageClass: local-path
+      size: 8Gi
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+# Redis subchart
+redis:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: true
+      storageClass: local-path
+      size: 2Gi
+    resources:
+      requests:
+        cpu: 25m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
