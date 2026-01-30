@@ -89,17 +89,7 @@ spec:
             priorityClassName: "system-cluster-critical"
 
           wiz-admission-controller:
-            enabled: true
-            resources:
-              requests:
-                cpu: 50m
-                memory: 100Mi
-              limits:
-                cpu: 200m
-                memory: 300Mi
-            webhook:
-              failurePolicy: Fail
-              timeoutSeconds: 30
+            enabled: false
 
   destination:
     server: https://kubernetes.default.svc
