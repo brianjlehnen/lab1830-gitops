@@ -1,0 +1,96 @@
+name: Validate
+
+on:
+  pull_request:
+    branches: [main, staging]
+  push:
+    branches: [staging]
+
+jobs:
+  yaml-lint:
+    name: YAML Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install yamllint
+        run: pip install yamllint
+      - name: Lint ArgoCD manifests
+        run: yamllint -c .yamllint.yml argocd/
+      - name: Lint Helm chart values
+        run: yamllint -c .yamllint.yml charts/
+
+  helm-lint:
+    name: Helm Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+      - name: Add dependency repos
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo add goauthentik https://charts.goauthentik.io
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo update
+      - name: Lint all charts
+        run: |
+          failed=0
+          for chart in charts/*/*/Chart.yaml; do
+            chart_dir=$(dirname "$chart")
+            echo "--- Linting $chart_dir ---"
+            if [ -f "$chart_dir/Chart.lock" ]; then
+              helm dependency build "$chart_dir" 2>/dev/null || true
+            fi
+            if ! helm lint "$chart_dir"; then
+              failed=1
+            fi
+          done
+          exit $failed
+
+  helm-template:
+    name: Helm Template
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+      - name: Add dependency repos
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo add goauthentik https://charts.goauthentik.io
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo update
+      - name: Template all charts
+        run: |
+          failed=0
+          for chart in charts/*/*/Chart.yaml; do
+            chart_dir=$(dirname "$chart")
+            echo "--- Templating $chart_dir ---"
+            if [ -f "$chart_dir/Chart.lock" ]; then
+              helm dependency build "$chart_dir" 2>/dev/null || true
+            fi
+            if ! helm template test "$chart_dir" > /dev/null; then
+              echo "FAIL: $chart_dir"
+              failed=1
+            fi
+          done
+          exit $failed
+
+  kubeconform:
+    name: Kubernetes Schema Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install kubeconform
+        run: |
+          curl -sL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz
+          sudo mv kubeconform /usr/local/bin/
+      - name: Validate ArgoCD application manifests
+        run: |
+          kubeconform \
+            -strict \
+            -ignore-missing-schemas \
+            -summary \
+            argocd/

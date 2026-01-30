@@ -12,7 +12,7 @@ namespace:
 vault:
   enabled: false
 
-# Minimal subchart values - ArgoCD will override these
+# Subchart values - nested under parent chart
 wiz-kubernetes-integration:
   global:
     wizApiToken:
@@ -20,17 +20,16 @@ wiz-kubernetes-integration:
         create: false
         name: wiz-api-token
 
-wiz-kubernetes-connector:
-  enabled: true
+  wiz-kubernetes-connector:
+    enabled: true
+    wiz-broker:
+      enabled: true
 
-wiz-broker:
-  enabled: true
+  wiz-sensor:
+    enabled: true
+    imagePullSecret:
+      create: false
+      name: sensor-image-pull
 
-wiz-sensor:
-  enabled: true
-  imagePullSecret:
-    create: false
-    name: sensor-image-pull
-
-wiz-admission-controller:
-  enabled: true
+  wiz-admission-controller:
+    enabled: true

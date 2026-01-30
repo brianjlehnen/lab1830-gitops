@@ -15,7 +15,7 @@ spec:
       values: |
         # Single binary deployment for staging
         deploymentMode: SingleBinary
-        
+
         loki:
           # Authentication disabled - protected by network policies
           auth_enabled: false
@@ -39,7 +39,7 @@ spec:
                 index:
                   prefix: index_
                   period: 24h
-        
+
         # Single binary configuration
         singleBinary:
           replicas: 1
@@ -55,7 +55,7 @@ spec:
             size: 5Gi
             storageClass: "local-path"
           affinity: {}
-        
+
         # Explicitly disable distributed components
         read:
           replicas: 0
@@ -63,7 +63,7 @@ spec:
           replicas: 0
         backend:
           replicas: 0
-        
+
         # Disable optional components for staging
         gateway:
           enabled: false
@@ -71,12 +71,12 @@ spec:
           enabled: false
         resultsCache:
           enabled: false
-        
+
         # Disable monitoring components for simplicity
         monitoring:
           lokiCanary:
             enabled: false
-        
+
         # Disable test pods
         test:
           enabled: false

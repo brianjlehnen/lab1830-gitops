@@ -1,6 +1,6 @@
 dependencies:
 - name: wiz-kubernetes-integration
   repository: https://charts.wiz.io
-  version: 0.2.106
-digest: sha256:3cf4d0a8deaf7a8a80a6a1ad31bd6414d21df67cfca9b2734097257a55bdb467
-generated: "2025-08-14T19:13:09.466970815Z"
+  version: 0.3.9
+digest: sha256:6a088c823ec080d6b33350096f4ddd721508561cd78b44242809ad5a6100d1dd
+generated: "2026-01-29T21:36:25.755421811Z"

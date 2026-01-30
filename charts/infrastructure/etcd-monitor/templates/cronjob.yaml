@@ -1,0 +1,90 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: k3s-backup
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "etcd-monitor.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        metadata:
+          labels:
+            {{- include "etcd-monitor.labels" . | nindent 12 }}
+        spec:
+          restartPolicy: Never
+          nodeSelector:
+            {{- toYaml .Values.controlPlaneNodeSelector | nindent 12 }}
+          tolerations:
+            - key: node-role.kubernetes.io/master
+              effect: NoSchedule
+            - key: node-role.kubernetes.io/control-plane
+              effect: NoSchedule
+          containers:
+            - name: backup-and-check
+              image: busybox:1.36
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+                  STATE_DB="{{ .Values.stateDbPath }}/state.db"
+                  BACKUP_DIR="{{ .Values.backupDir }}"
+                  MAX_AGE_SECONDS=$(({{ .Values.maxAgeHours }} * 3600))
+                  RETENTION_DAYS={{ .Values.retentionDays }}
+                  NOW=$(date +%s)
+
+                  # Verify state.db exists
+                  if [ ! -f "$STATE_DB" ]; then
+                    echo "ERROR: k3s state database not found at $STATE_DB"
+                    exit 1
+                  fi
+
+                  # Create backup directory
+                  mkdir -p "$BACKUP_DIR"
+
+                  # Copy state.db with timestamp
+                  TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+                  BACKUP_FILE="$BACKUP_DIR/state-${TIMESTAMP}.db"
+                  cp "$STATE_DB" "$BACKUP_FILE"
+                  echo "Backup created: $(basename $BACKUP_FILE) ($(du -h "$BACKUP_FILE" | cut -f1))"
+
+                  # Prune old backups
+                  find "$BACKUP_DIR" -name "state-*.db" -mtime +${RETENTION_DAYS} -delete 2>/dev/null
+                  BACKUP_COUNT=$(ls "$BACKUP_DIR"/state-*.db 2>/dev/null | wc -l)
+                  echo "Backups retained: $BACKUP_COUNT"
+
+                  # Verify freshness of latest backup
+                  LATEST=$(ls -t "$BACKUP_DIR"/state-*.db 2>/dev/null | head -1)
+                  SNAP_TIME=$(stat -c %Y "$LATEST")
+                  AGE=$((NOW - SNAP_TIME))
+                  AGE_HOURS=$((AGE / 3600))
+
+                  echo "Latest backup age: ${AGE_HOURS}h (max: {{ .Values.maxAgeHours }}h)"
+
+                  if [ "$AGE" -gt "$MAX_AGE_SECONDS" ]; then
+                    echo "STALE: Backup is ${AGE_HOURS}h old"
+                    exit 1
+                  fi
+
+                  echo "OK: Backup is fresh"
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 16Mi
+                limits:
+                  cpu: 50m
+                  memory: 32Mi
+              volumeMounts:
+                - name: k3s-db
+                  mountPath: {{ .Values.stateDbPath }}
+          volumes:
+            - name: k3s-db
+              hostPath:
+                path: {{ .Values.stateDbPath }}
+                type: Directory

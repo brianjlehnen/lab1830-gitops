@@ -178,6 +178,14 @@ networkPolicies:
             ports:
               - protocol: TCP
                 port: 8085
+          # Allow internal pod-to-pod (velero server -> nfs-gateway MinIO)
+          - from:
+            - podSelector: {}
+            ports:
+              - protocol: TCP
+                port: 9000
+              - protocol: TCP
+                port: 9001
         egress:
           # DNS resolution
           - to: []
@@ -186,7 +194,15 @@ networkPolicies:
                 port: 53
               - protocol: TCP
                 port: 53
-          # MinIO/S3 on NAS
+          # Internal pod-to-pod (velero server -> nfs-gateway MinIO)
+          - to:
+            - podSelector: {}
+            ports:
+              - protocol: TCP
+                port: 9000
+              - protocol: TCP
+                port: 9001
+          # MinIO/S3 on NAS (direct NAS access)
           - to:
             - ipBlock:
                 cidr: "192.168.x.159/32"
@@ -200,6 +216,11 @@ networkPolicies:
             ports:
               - protocol: TCP
                 port: 6443
+          # HTTPS for plugin downloads and API calls
+          - to: []
+            ports:
+              - protocol: TCP
+                port: 443
           # NFS for volume backups
           - to:
             - ipBlock:

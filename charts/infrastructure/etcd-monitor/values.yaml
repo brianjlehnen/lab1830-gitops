@@ -1,0 +1,11 @@
+schedule: "0 */6 * * *"
+stateDbPath: /var/lib/rancher/k3s/server/db
+backupDir: /var/lib/rancher/k3s/server/db/backups
+maxAgeHours: 24
+retentionDays: 7
+controlPlaneNodeSelector:
+  node-role.kubernetes.io/control-plane: "true"
+
+prometheusRule:
+  enabled: false
+  additionalLabels: {}

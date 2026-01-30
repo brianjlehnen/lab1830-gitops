@@ -23,7 +23,7 @@ spec:
         serviceAccounts:
           - name: monitoring-reader-staging
             namespace: monitoring-staging
-        
+
         # Override roles to use staging namespace
         roles:
           developer:
@@ -38,17 +38,17 @@ spec:
               - apiGroups: [""]
                 resources: ["secrets"]
                 verbs: ["get", "list", "watch"]
-        
+
         clusterRoleBindings:
           - name: monitoring-reader-staging-binding
             clusterRole: monitoring-reader
             serviceAccount: monitoring-reader-staging
             namespace: monitoring-staging
-  
+
   destination:
     server: https://kubernetes.default.svc
     namespace: security
-  
+
   syncPolicy:
     automated:
       prune: false

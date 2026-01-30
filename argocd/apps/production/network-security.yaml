@@ -21,11 +21,11 @@ spec:
       values: |
         # Production-specific network configuration
         global:
-          nfsServer: "192.168.x.159"
-          lokiEndpoint: "192.168.x.250"
+          nfsServer: "192.168.4.159"
+          lokiEndpoint: "192.168.4.250"
           lokiPort: 31000
-          clusterCIDR: "192.168.x.0/22"
-        
+          clusterCIDR: "192.168.4.0/22"
+
         # Enable network policies for production (vault removed)
         networkPolicies:
           monitoring:
@@ -44,11 +44,11 @@ spec:
             enabled: true
           kyverno:
             enabled: true
-  
+
   destination:
     server: https://kubernetes.default.svc
     namespace: security
-  
+
   syncPolicy:
     automated:
       prune: false

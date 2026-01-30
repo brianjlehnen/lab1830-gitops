@@ -1,24 +1,29 @@
-# argocd/apps/production/namespace-labels.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: namespace-labels
+  name: etcd-monitor-production
   namespace: argocd
-  labels:
-    app.kubernetes.io/name: namespace-labels
-    environment: production
 spec:
   project: default
   source:
     repoURL: git@github.com:brianjlehnen/homelab-gitops.git
-    path: charts/infrastructure/namespace-labels
     targetRevision: main
+    path: charts/infrastructure/etcd-monitor
+    helm:
+      values: |
+        schedule: "0 */6 * * *"
+        maxAgeHours: 24
+        prometheusRule:
+          enabled: true
+          additionalLabels:
+            release: monitoring-production
   destination:
     server: https://kubernetes.default.svc
+    namespace: kube-system
   syncPolicy:
     automated:
-      prune: false
+      prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace=false
+      - CreateNamespace=true
       - ServerSideApply=true

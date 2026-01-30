@@ -21,12 +21,12 @@ spec:
             limits:
               cpu: 100m
               memory: 128Mi
-        
+
         clusterIssuers:
           selfsigned:
             enabled: true
             name: selfsigned-clusterissuer-staging
-          
+
           letsencrypt:
             email: brian@lab1830.com
             staging:

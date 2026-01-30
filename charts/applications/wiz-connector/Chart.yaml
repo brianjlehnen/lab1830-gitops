@@ -11,11 +11,11 @@ keywords:
   - kubernetes
 home: https://www.wiz.io
 sources:
-  - git@github.com:brianjlehnen/homelab-gitops.git
+  - https://github.com/brianjlehnen/homelab-gitops
 maintainers:
   - name: brian
     email: brian@lab1830.com
 dependencies:
   - name: wiz-kubernetes-integration
-    version: "0.2.106"
+    version: "0.3.9"
     repository: https://charts.wiz.io

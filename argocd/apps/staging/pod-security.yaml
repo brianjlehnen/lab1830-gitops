@@ -21,7 +21,7 @@ spec:
       values: |
         # Staging-specific configuration (more lenient)
         defaultEnforcementLevel: baseline
-        
+
         # Only apply to staging namespaces (vault-staging removed)
         namespaces:
           infrastructure:
@@ -34,11 +34,11 @@ spec:
               enforce: baseline
               audit: restricted
               warn: restricted
-  
+
   destination:
     server: https://kubernetes.default.svc
     namespace: security
-  
+
   syncPolicy:
     automated:
       prune: false

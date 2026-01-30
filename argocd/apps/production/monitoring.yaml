@@ -34,25 +34,23 @@ spec:
               size: 10Gi
             initChownData:
               enabled: false
-            envFrom:
-              - secretRef:
+            envValueFrom:
+              GF_SMTP_PASSWORD:
+                secretKeyRef:
                   name: grafana-smtp-secret
+                  key: GF_SMTP_PASSWORD
+              GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET:
+                secretKeyRef:
+                  name: grafana-oauth-secret
+                  key: GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET
             env:
               GF_SMTP_ENABLED: "true"
               GF_SMTP_HOST: "smtp.gmail.com:587"
-              GF_SMTP_FROM_ADDRESS: "blehnen@gmail.com"
+              GF_SMTP_USER: "brian@saturnvsystems.com"
+              GF_SMTP_FROM_ADDRESS: "brian@lab1830.com"
               GF_SMTP_FROM_NAME: "Lab1830 Grafana Alerts"
               GF_SMTP_STARTTLS_POLICY: "MandatoryStartTLS"
               GF_SMTP_SKIP_VERIFY: "false"
-              GF_AUTH_GENERIC_OAUTH_ENABLED: "true"
-              GF_AUTH_GENERIC_OAUTH_NAME: "Authentik"
-              GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP: "true"
-              GF_AUTH_GENERIC_OAUTH_CLIENT_ID: "grafana"
-              GF_AUTH_GENERIC_OAUTH_SCOPES: "openid profile email"
-              GF_AUTH_GENERIC_OAUTH_AUTH_URL: "https://auth.lab1830.com/application/o/authorize/"
-              GF_AUTH_GENERIC_OAUTH_TOKEN_URL: "https://auth.lab1830.com/application/o/token/"
-              GF_AUTH_GENERIC_OAUTH_API_URL: "https://auth.lab1830.com/application/o/userinfo/"
-              GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH: "contains(groups[*], 'authentik Admins') && 'Admin' || 'Viewer'"
             resources:
               requests:
                 cpu: 25m
@@ -64,6 +62,22 @@ spec:
               server:
                 root_url: "https://grafana.lab1830.com"
                 domain: "lab1830.com"
+              auth:
+                oauth_auto_login: false
+              auth.generic_oauth:
+                enabled: true
+                allow_sign_up: true
+                auto_login: false
+                name: Authentik
+                client_id: grafana
+                scopes: openid profile email
+                auth_url: https://auth.lab1830.com/application/o/authorize/
+                token_url: https://auth.lab1830.com/application/o/token/
+                api_url: https://auth.lab1830.com/application/o/userinfo/
+                email_attribute_path: email
+                login_attribute_path: preferred_username
+                name_attribute_path: name
+                role_attribute_path: "contains(groups[*], 'authentik Admins') && 'Admin' || 'Viewer'"
               unified_alerting:
                 enabled: true
           prometheus:
@@ -105,6 +119,58 @@ spec:
                     resources:
                       requests:
                         storage: 10Gi
+              secrets:
+                - alertmanager-smtp-secret
+            config:
+              global:
+                resolve_timeout: 5m
+                smtp_from: "brian@lab1830.com"
+                smtp_smarthost: "smtp.gmail.com:587"
+                smtp_auth_username: "brian@saturnvsystems.com"
+                smtp_auth_password_file: "/etc/alertmanager/secrets/alertmanager-smtp-secret/smtp-password"
+                smtp_require_tls: true
+              inhibit_rules:
+                - source_matchers:
+                    - 'severity = critical'
+                  target_matchers:
+                    - 'severity =~ warning|info'
+                  equal: ['namespace', 'alertname']
+                - source_matchers:
+                    - 'severity = warning'
+                  target_matchers:
+                    - 'severity = info'
+                  equal: ['namespace', 'alertname']
+                - source_matchers:
+                    - 'alertname = InfoInhibitor'
+                  target_matchers:
+                    - 'severity = info'
+                  equal: ['namespace']
+                - target_matchers:
+                    - 'alertname = InfoInhibitor'
+              route:
+                group_by: ['namespace', 'alertname']
+                group_wait: 30s
+                group_interval: 5m
+                repeat_interval: 4h
+                receiver: 'email-brian'
+                routes:
+                  - receiver: 'null'
+                    matchers:
+                      - alertname = "Watchdog"
+                  - receiver: 'email-brian'
+                    matchers:
+                      - severity =~ "critical|warning"
+                    continue: true
+              receivers:
+                - name: 'null'
+                - name: 'email-brian'
+                  email_configs:
+                    - to: 'brian@lab1830.com'
+                      send_resolved: true
+                      headers:
+                        subject: '{{ printf "[Lab1830] {{ .Status | toUpper }}: {{ .CommonLabels.alertname }}" }}'
+              templates:
+                - '/etc/alertmanager/config/*.tmpl'
           kubeStateMetrics:
             resources:
               requests:
