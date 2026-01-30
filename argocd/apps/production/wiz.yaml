@@ -29,6 +29,8 @@ spec:
                 name: wiz-api-token
 
           wiz-kubernetes-connector:
+            clusterReader:
+              installRbac: false
             autoCreateConnector:
               enabled: false
             wizConnector:
