@@ -71,6 +71,12 @@ spec:
               server:
                 root_url: "https://grafana.lab1830.com"
                 domain: "lab1830.com"
+              auth:
+                oauth_auto_login: false
+              auth.generic_oauth:
+                enabled: true
+                allow_sign_up: true
+                auto_login: false
               unified_alerting:
                 enabled: true
           prometheus:
